@@ -66,16 +66,12 @@ function eventNewGame()
 	for name,player in next,tfm.get.room.playerList do
 		num_de_jogadores_vivos=num_de_jogadores_vivos+1
 	end 
-	tfm.exec.setGameTime(60)
 	updatePlayersList()
 	tfm.exec.newGame("@7917347")
 	--tfm.exec.addImage(String nomeDaImagem, String target, Int posiçãoX, Int posiçãoY, String targetPlayer)
 	tfm.exec.addImage("174042eda4f.png", "%Fake_da_annyxd#7479", -21, -30)
 	--tfm.exec.addImage("149a49e4b38.jpg", "?2", 500, 0)
 	--tfm.exec.addImage("15150c10e92.png", "?2", 0, 0)
-	tfm.exec.addPhysicObject(id["piso_gelo"], 400, 120, pisoGelo)
-	tfm.exec.addPhysicObject(id["piso_verdadeiro"], 163, 275, pisoTrue)
-	tfm.exec.addPhysicObject(id["piso_falso"], 638, 275, pisoFalse)
 
 	--tfm.exec.addImage("1651b3019c0.png", "+9", 0, 0)
 
@@ -193,6 +189,7 @@ function eventPopupAnswer(popupId, playerName, answer)
   end
 end
 
+
 function eventLoop(tempoAtual, tempoRestante)
 	ui.setMapName("Verdadeiro ou falso! Ratos vivos "..num_de_jogadores_vivos.." de "..qtd_de_jogadores.."                                  Rodada atual: "..rodada)
 	timer = timer + 0.5
@@ -236,18 +233,19 @@ function eventLoop(tempoAtual, tempoRestante)
 		ui.removeTextArea(33,nil)
 	end
 
-
+	--1 segundo = 1000 milisegundos 0,00
 	if tempoRestante < 1 and atualSituacao == "intervalo" then
-			if (num_de_jogadores_vivos == 0) then
-				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Fim de jogo!".. "</font></font></p>", nil, 20, 290, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
-				tfm.exec.setGameTime(5)
-				atualSituacao = "fim_do_jogo2"
-			else
 				novaPergunta()
-			end
 	end
 
-if tempoRestante <= 1500 and num_de_jogadores_vivos == 0 and modo == "fim_do_jogo" then
+	if (num_de_jogadores_vivos == 0) then
+				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Tudo ruim heheheheeh".. "</font></font></p>", nil, 20, 290, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+				ui.removeTextArea(id["question_label"])
+				tfm.exec.setGameTime(5)
+				atualSituacao = "fim_do_jogo2"
+	end
+
+	if tempoRestante <= 1500 and num_de_jogadores_vivos == 0 and modo == "fim_do_jogo" then
 		for name,player in next,tfm.get.room.playerList do
 			if not tfm.get.room.playerList[name].isDead then
 			ui.addTextArea(id["jogo_vencido"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."O jogador "..mestre.." venceu!!".. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
@@ -281,7 +279,7 @@ function novaPergunta()
 	end
 	atualSituacao = "pergunta"
 	resposta = ""
-	tfm.exec.setGameTime(60)
+	tfm.exec.setGameTime(15)
 	tfm.exec.addPhysicObject(id["piso_gelo"], 400, 120, pisoGelo)
 	tfm.exec.addPhysicObject(id["piso_verdadeiro"], 163, 275, pisoTrue)
 	tfm.exec.addPhysicObject(id["piso_falso"], 638, 275, pisoFalse)
