@@ -10,12 +10,20 @@ local mestre = "" -- quem vai ser o perguntador. como é randomico, começa nulo
 players = {} -- armazena a quantidade de jogadores da sala
 lang = {} -- armazena as mensagens do jogo
 id = {}
+
+
 perguntaFeita = false
 necessarioResetar = false
 fimDoTempo = false
+hasLost = false
+hasToReset = false
+
+
+
 atualSituacao = "começo"
 boolean = resposta
 timer = 0
+timerReset = 0
 num_de_jogadores_vivos = 0
 qtd_de_jogadores = -1
 rodada = 0
@@ -32,9 +40,10 @@ lang.br = {
 	
 }
 
-pisoTrue = {type = 12,width = 326,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0x00FF7F',miceCollision = true,groundCollision = true,dynamic = false}
-pisoFalse = {type = 12,width = 326,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0xFF0000',miceCollision = true,groundCollision = true,dynamic = false}
-pisoGelo = {type = 1,width = 152,height = 10,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = 0,miceCollision = true,groundCollision = true,dynamic = false}
+pisoTrue = {type = 12,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0x00FF7F',miceCollision = true,groundCollision = true,dynamic = false}
+pisoFalse = {type = 12,width = 281,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0xFF0000',miceCollision = true,groundCollision = true,dynamic = false}
+pisoGelo = {type = 10,width = 152,height = 10,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = 0,miceCollision = true,groundCollision = true,dynamic = false}
+pisoParede = {type = 10,width = 40,height = 400,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = 0,miceCollision = true,groundCollision = true,dynamic = false}
 text = lang.br
 
 imagens = {img="174042eda4f.png", w=28, h=29}
@@ -54,6 +63,8 @@ id["piso_falso"] = 10
 id["piso_gelo"] = 11
 id["question_reset"] = 12
 id["jogo_vencido"] = 13
+id["parede1"] = 14
+id["parede2"] = 15
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------função que dá as configurações iniciais do jogo------------------------------------------------------------
@@ -67,10 +78,9 @@ function eventNewGame()
 		num_de_jogadores_vivos=num_de_jogadores_vivos+1
 	end 
 	updatePlayersList()
-	tfm.exec.newGame("@7917347")
 	--tfm.exec.addImage(String nomeDaImagem, String target, Int posiçãoX, Int posiçãoY, String targetPlayer)
 	tfm.exec.addImage("174042eda4f.png", "%Fake_da_annyxd#7479", -21, -30)
-	--tfm.exec.addImage("149a49e4b38.jpg", "?2", 500, 0)
+	tfm.exec.addImage("1845194669a.png", "?2", 0, 20)
 	--tfm.exec.addImage("15150c10e92.png", "?2", 0, 0)
 
 	--tfm.exec.addImage("1651b3019c0.png", "+9", 0, 0)
@@ -112,7 +122,7 @@ function askQuestion()
 
 		--BOTÃO PERGUNTA:
 		ui.addTextArea(id["question_button"], "<p align='center'><a href='event:callbackAskWord'>"..text.botao_pergunta.."</a></p>", mestre, 300, 120, 210, 20, 0x595959, 0x595959, 1f) --BOTÃO PERGUNTA
-    ui.addTextArea(id["turn_label1"], "<font size='13'><p align='center'><BL><font color='#8B008B'>".."É a vez de: "..mestre.."</font></font></p>", p, -250, 30, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+    ui.addTextArea(id["turn_label1"], "<font size='13'><p align='center'><BL><font color='#8B008B'>".."É a vez de: "..mestre.."</font></font></p>", p, -230, 30, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
     --ui.addTextArea(9, "", p, 20, 300, 750, 100, 0x128309, 0x128309, 1f)
       		
 	end
@@ -147,7 +157,7 @@ function randomPlayer()
 end
 
 
------------------------------------------------------QUANDO O JOGADOR DECIDE SE É TRUE OR FALSE------------------------------------------------------------
+-----------------------------------------------------QUANDO O MESTRE DECIDE SE É TRUE OR FALSE------------------------------------------------------------
 function eventTextAreaCallback(textAreaId, playerName, callback)
   	if callback=="callbackAskWord" then
   		perguntaFeita = true
@@ -156,7 +166,7 @@ function eventTextAreaCallback(textAreaId, playerName, callback)
   	end
 
   	if callback == "callbackTrue" then
-  		tfm.exec.setGameTime(5)
+  		tfm.exec.setGameTime(10)
   		tfm.exec.removePhysicObject(id["piso_gelo"])
   	 	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 20, 300, 750, 100, 0xC0C0C0, 0xC0C0C0, 0f)
   	 	ui.removeTextArea(id["question_button"])
@@ -167,7 +177,7 @@ function eventTextAreaCallback(textAreaId, playerName, callback)
   	end
 
   	if callback == "callbackFalse" then
-  		tfm.exec.setGameTime(5)
+  		tfm.exec.setGameTime(10)
   		tfm.exec.removePhysicObject(id["piso_gelo"])
   	 	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 20, 300, 750, 100, 0xC0C0C0, 0xC0C0C0, 0f)
   	 	ui.removeTextArea(id["question_button"])
@@ -194,11 +204,6 @@ function eventLoop(tempoAtual, tempoRestante)
 	ui.setMapName("Verdadeiro ou falso! Ratos vivos "..num_de_jogadores_vivos.." de "..qtd_de_jogadores.."                                  Rodada atual: "..rodada)
 	timer = timer + 0.5
 
-	if timer==25 and not perguntaFeita and qtd_de_jogadores > 1 then
-    fimDoTempo = true
-    reset()
-  end
-
 	--ALTERANDO A SITUAÇÃO DA PARTIDA
 	if tempoAtual < 2000 and atualSituacao == "começo" then
 		atualSituacao = "pergunta"
@@ -206,7 +211,6 @@ function eventLoop(tempoAtual, tempoRestante)
 	end
 
 	if tempoRestante < 1250 and atualSituacao == "pergunta" then
-	--if atualSituacao == "pergunta" then
 		for name,player in next,tfm.get.room.playerList do
 			if tfm.get.room.playerList[name].x >= 330 and tfm.get.room.playerList[name].x <= 480 then
 				tfm.exec.killPlayer(name)
@@ -229,8 +233,6 @@ function eventLoop(tempoAtual, tempoRestante)
 	if atualSituacao == "pergunta" and tempoRestante >= 1 then
 		-----------------------------------AQUI O TEMPO
 		ui.addTextArea(33,"<p align='center'><font size='45'>"..math.floor((tempoRestante/1000)-1).."",nil,360,215,80,60,0x000001,0x494949,1.0,true)
-	else
-		ui.removeTextArea(33,nil)
 	end
 
 	--1 segundo = 1000 milisegundos 0,00
@@ -238,27 +240,27 @@ function eventLoop(tempoAtual, tempoRestante)
 				novaPergunta()
 	end
 
-	if (num_de_jogadores_vivos == 0) then
-				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Tudo ruim heheheheeh".. "</font></font></p>", nil, 20, 290, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
-				ui.removeTextArea(id["question_label"])
+
+	if num_de_jogadores_vivos == 0 then
 				tfm.exec.setGameTime(5)
-				atualSituacao = "fim_do_jogo2"
+				--ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Tudo ruim heheheheeh".. "</font></font></p>", nil, 20, 290, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+				ui.removeTextArea(id["question_label"])
+				resetTodosMorrem()
 	end
 
-	if tempoRestante <= 1500 and num_de_jogadores_vivos == 0 and modo == "fim_do_jogo" then
-		for name,player in next,tfm.get.room.playerList do
-			if not tfm.get.room.playerList[name].isDead then
-			ui.addTextArea(id["jogo_vencido"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."O jogador "..mestre.." venceu!!".. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
-			end
+	if necessarioResetar == true then
+		timerReset = timerReset + 0.5
+		if num_de_jogadores_vivos == 0 then
+				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Tudo ruim heheheheeh. Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 290, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 		end
 	end
-	if tempoRestante < 50 then
-		if atualSituacao == "fim_do_jogo" or atualSituacao == "fim_do_jogo2" then
-			atualSituacao="começo"
-			reset()
-		end
-	end
-end
+
+	if timerReset==5 then
+		hasToReset = true
+    resetTodosMorrem()
+  end
+ end
+
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ------------------------------------------------DEPOIS QUE A GALERA MORRE E PRECISA DE UMA NOVA PERGUNTA------------------------------------------------------------
@@ -279,10 +281,12 @@ function novaPergunta()
 	end
 	atualSituacao = "pergunta"
 	resposta = ""
-	tfm.exec.setGameTime(15)
+	tfm.exec.setGameTime(60)
 	tfm.exec.addPhysicObject(id["piso_gelo"], 400, 120, pisoGelo)
-	tfm.exec.addPhysicObject(id["piso_verdadeiro"], 163, 275, pisoTrue)
-	tfm.exec.addPhysicObject(id["piso_falso"], 638, 275, pisoFalse)
+	tfm.exec.addPhysicObject(id["piso_verdadeiro"], 180, 275, pisoTrue)
+	tfm.exec.addPhysicObject(id["piso_falso"], 618, 275, pisoFalse)
+	tfm.exec.addPhysicObject(id["parede1"], 20, 200, pisoParede)
+	tfm.exec.addPhysicObject(id["parede2"], 780, 200, pisoParede)
 	askQuestion()
 	atualSituacao = "pergunta"
 	ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Aguarde enquanto "..mestre.." faz a pergunta".. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
@@ -292,16 +296,30 @@ end
 
 ------------------------------------------------------------PRECISA MELHORAR O RESET---------------------------------------------------------------------------------------------------------------
 
-function reset()
-	modo="começo"
+function resetTodosMorrem()
+	atualSituacao ="começo"
+	necessarioResetar = true
 
+	ui.removeTextArea(id["question_reset"])
 	rodada = 0
 	pontuacao = -1
 
-	tfm.exec.newGame("@7917347")
-	for name,player in pairs(tfm.get.room.playerList) do
-  	tfm.exec.setPlayerScore(name, 0, false)
+	if hasToReset then
+		if numeroDeJogadores() < 2 then
+			tfm.exec.newGame("@7917347")
+		else
+			eventNewGame()
+			tfm.exec.newGame("@7917347")
+			hasToReset = false 
+			necessarioResetar = false 
+			atualSituacao ="começo"
+			timer = 0
+			timerReset = 0
+		end
 	end
 end
 
-reset()
+tfm.exec.newGame("@7917347")
+
+--Posições: X=20; Y=200; L=40; H=400
+--					X=780; Y=200; L=4-; H=400
