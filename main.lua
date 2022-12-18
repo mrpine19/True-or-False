@@ -17,7 +17,7 @@ necessarioResetar = false
 fimDoTempo = false
 hasLost = false
 hasToReset = false
-
+mestreSkip = false
 
 
 atualSituacao = "começo"
@@ -44,6 +44,11 @@ pisoTrue = {type = 12,width = 285,height = 30,foregound = 1,friction = 1.0,resti
 pisoFalse = {type = 12,width = 281,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0xFF0000',miceCollision = true,groundCollision = true,dynamic = false}
 pisoGelo = {type = 10,width = 152,height = 10,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = 0,miceCollision = true,groundCollision = true,dynamic = false}
 pisoParede = {type = 10,width = 40,height = 400,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = 0,miceCollision = true,groundCollision = true,dynamic = false}
+pisoTransparente = {type = 8,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0x00FF7F',miceCollision = false,groundCollision = true,dynamic = false}
+pisoAcido = {type = 19,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0x00FF7F',miceCollision = true,groundCollision = true,dynamic = false}
+
+
+
 text = lang.br
 
 imagens = {img="174042eda4f.png", w=28, h=29}
@@ -86,9 +91,8 @@ function eventNewGame()
 	--tfm.exec.addImage("1651b3019c0.png", "+9", 0, 0)
 
 		
-	if numeroDeJogadores() > 1 then
+	if numeroDeJogadores() > 1 then --MUDAR PARA 2 DEPOIS QUE TERMINAR TUDO
 		mestre = randomPlayer()
-		tfm.exec.movePlayer(mestre, 400, 220, false, 0, 0, false) -- AJUSTAR A POSIÇÃO DO PERGUNTADOR
 		tfm.exec.killPlayer(mestre)
 		askQuestion()
 		ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Aguarde enquanto "..mestre.." faz a pergunta".. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
@@ -144,6 +148,10 @@ for name,player in next,tfm.get.room.playerList do
 end
 function eventPlayerLeft(name)
 	qtd_de_jogadores = qtd_de_jogadores - 1
+	if name == mestre then
+		mestreSkip = true
+		resetTodosMorrem()
+	end
 end
 function eventPlayerDied(name)
 	num_de_jogadores_vivos = num_de_jogadores_vivos - 1
@@ -212,22 +220,13 @@ function eventLoop(tempoAtual, tempoRestante)
 
 	if tempoRestante < 1250 and atualSituacao == "pergunta" then
 		for name,player in next,tfm.get.room.playerList do
-			if tfm.get.room.playerList[name].x >= 330 and tfm.get.room.playerList[name].x <= 480 then
+			if tfm.get.room.playerList[name].y >= 157 and tfm.get.room.playerList[name].y <= 230 then
 				tfm.exec.killPlayer(name)
 			end
 		end
 		tfm.exec.setGameTime(6)
 
-		if resposta == true then
-			tfm.exec.removePhysicObject(id["piso_falso"])
-			atualSituacao = "intervalo"
-		end
-
-		if resposta == false then
-			tfm.exec.removePhysicObject(id["piso_verdadeiro"])
-			atualSituacao = "intervalo"
-
-		end
+		morte(resposta, 4)
 	end
 
 	if atualSituacao == "pergunta" and tempoRestante >= 1 then
@@ -243,23 +242,86 @@ function eventLoop(tempoAtual, tempoRestante)
 
 	if num_de_jogadores_vivos == 0 then
 				tfm.exec.setGameTime(5)
-				--ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Tudo ruim heheheheeh".. "</font></font></p>", nil, 20, 290, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 				ui.removeTextArea(id["question_label"])
 				resetTodosMorrem()
 	end
 
+	if timer==58 and not perguntaFeita and num_de_jogadores_vivos > 0 then --MUDAR A QUANTIDADE DE JOGADORES QUANDO O JOGO ESTIVER PRONTO
+    fimDoTempo = true
+    resetTodosMorrem()
+  end
+
 	if necessarioResetar == true then
 		timerReset = timerReset + 0.5
 		if num_de_jogadores_vivos == 0 then
-				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Tudo ruim heheheheeh. Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 290, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Todos morreram! Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 		end
+		if fimDoTempo then ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Fim do tempo! Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 290, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) end
+		if mestreSkip then ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."O mestre abandonou a partida! Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 290, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) end
 	end
 
 	if timerReset==5 then
 		hasToReset = true
+		fimDoTempo = false
+		mestreSkip = false
     resetTodosMorrem()
   end
  end
+
+ --CRIANDO OS DIFERENTES CENÁRIOS DE MORTE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+function morte(condicao, numero)
+	if condicao == true then
+		texto = "verdadeiro"
+	end
+	if condicao == false then
+		texto = "falso"
+	end
+
+	ui.addTextArea(id["turn_label1"], "<font size='13'><p align='center'><BL><font color='#8B008B'>".."O número foi: "..numero.." E a resposta é "..texto.."</font></font></p>", p, -230, 30, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+	if condicao == true then
+		if numero == 1 then
+			tfm.exec.removePhysicObject(id["piso_falso"])
+		end
+		if numero == 2 then
+			tfm.exec.removePhysicObject(id["piso_falso"])
+			tfm.exec.addPhysicObject(id["piso_falso"], 180, 275, pisoTransparente)
+		end
+		if numero == 3 then
+			tfm.exec.removePhysicObject(id["piso_falso"])
+			tfm.exec.addPhysicObject(id["piso_falso"], 180, 273, pisoAcido)		
+		end	
+		if numero == 4 then
+			tfm.exec.removePhysicObject(id["parede2"])
+			tfm.exec.addShamanObject(17, 480, 210, 90, 50, 0, false)
+			tfm.exec.addShamanObject(17, 480, 230, 90, 50, 0, false)
+			tfm.exec.addShamanObject(17, 480, 250, 90, 50, 0, false)
+		end
+
+		atualSituacao = "intervalo"
+	end
+
+	if condicao == false then
+		if numero == 1 then
+			tfm.exec.removePhysicObject(id["piso_verdadeiro"])
+		end	
+		if numero == 2 then
+			tfm.exec.removePhysicObject(id["piso_verdadeiro"])
+			tfm.exec.addPhysicObject(id["piso_verdadeiro"], 618, 275, pisoTransparente)
+		end
+		if numero == 3 then
+			tfm.exec.removePhysicObject(id["piso_verdadeiro"])
+			tfm.exec.addPhysicObject(id["piso_verdadeiro"], 180, 273, pisoAcido)		
+		end	
+		if numero == 4 then
+			tfm.exec.removePhysicObject(id["parede1"])
+			tfm.exec.addShamanObject(17, 315, 210, 270, 50, 0, false)
+			tfm.exec.addShamanObject(17, 315, 230, 270, 50, 0, false)
+			tfm.exec.addShamanObject(17, 315, 250, 270, 50, 0, false)
+		end
+
+		atualSituacao = "intervalo"
+	end
+end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
