@@ -102,13 +102,6 @@ function eventNewGame()
 
 end
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------------------------PONTUAÇÃO----------------------------------------------------------------
-for name,player in pairs(tfm.get.room.playerList) do
-  tfm.exec.setPlayerScore(name, 0, false)
-end
-
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------ATUALIZA A LISTA DE JOGADORES DA SALA------------------------------------------------------------
 function updatePlayersList()
   players = {}
@@ -122,13 +115,9 @@ end
 ---------------------------------------------------------------------BOTÃO PERGUNTA-----------------------------------------------------------------------------------------------------------------
 function askQuestion()
 	if not perguntaFeita then
-		--ui.addTextArea(id["question_button"], "", mestre, 66, 322, 660, 81, 0xC0C0C0, 0x595959, 1f) 
-
 		--BOTÃO PERGUNTA:
 		ui.addTextArea(id["question_button"], "<p align='center'><a href='event:callbackAskWord'>"..text.botao_pergunta.."</a></p>", mestre, 300, 120, 210, 20, 0x595959, 0x595959, 1f) --BOTÃO PERGUNTA
-    ui.addTextArea(id["turn_label1"], "<font size='13'><p align='center'><BL><font color='#8B008B'>".."É a vez de: "..mestre.."</font></font></p>", p, -230, 30, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
-    --ui.addTextArea(9, "", p, 20, 300, 750, 100, 0x128309, 0x128309, 1f)
-      		
+    ui.addTextArea(id["turn_label1"], "<font size='13'><p align='center'><BL><font color='#8B008B'>".."É a vez de: "..mestre.."</font></font></p>", p, -230, 30, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)      		
 	end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -167,8 +156,7 @@ end
 
 -----------------------------------------------------QUANDO O MESTRE DECIDE SE É TRUE OR FALSE------------------------------------------------------------
 function eventTextAreaCallback(textAreaId, playerName, callback)
-  	if callback=="callbackAskWord" then
-  		perguntaFeita = true
+  	if callback=="callbackAskWord" and playerName==mestre then
   		--addPopup(Int id, Int type, String text, String targetPlayer, Int x, Int y, Int width, Boolean fixedPos (false))
     	ui.addPopup(id["ask_word_popup"], 2, text.question, mestre, 300, 120, 200) 
   	end
@@ -180,6 +168,7 @@ function eventTextAreaCallback(textAreaId, playerName, callback)
   	 	ui.removeTextArea(id["question_button"])
   	 	ui.removeTextArea(id["resposta_true"])
   	 	ui.removeTextArea(id["resposta_false"])
+  	 	perguntaFeita = true
   	 	resposta = true
 
   	end
@@ -191,8 +180,10 @@ function eventTextAreaCallback(textAreaId, playerName, callback)
   	 	ui.removeTextArea(id["question_button"])
   	 	ui.removeTextArea(id["resposta_true"])
   	 	ui.removeTextArea(id["resposta_false"])
+  	 	perguntaFeita = true
   	 	resposta = false
   	end
+  	
 end
 
 function eventPopupAnswer(popupId, playerName, answer)
@@ -201,7 +192,6 @@ function eventPopupAnswer(popupId, playerName, answer)
   	questionPlayer = answer
   	ui.addTextArea(id["resposta_true"], "<p align='center'><a href='event:callbackTrue'>"..text.verdadeiro.."</a></p>", mestre, 330, 150, 80, 20, 0x595959, 0x595959, 1f)
   	ui.addTextArea(id["resposta_false"], "<p align='center'><a href='event:callbackFalse'>"..text.falso.."</a></p>", mestre, 430, 150, 50, 20, 0x595959, 0x595959, 1f)
-   	--ui.removeTextArea(id["question_button"])
     ui.removeTextArea(id["one_player_label"]) 
 
   end
@@ -209,7 +199,7 @@ end
 
 
 function eventLoop(tempoAtual, tempoRestante)
-	ui.setMapName("Verdadeiro ou falso! Ratos vivos "..num_de_jogadores_vivos.." de "..qtd_de_jogadores.."                                  Rodada atual: "..rodada)
+	ui.setMapName("<N>Verdadeiro ou falso! Ratos vivos "..num_de_jogadores_vivos.." de "..qtd_de_jogadores.."                                  Rodada atual: "..rodada)
 	timer = timer + 0.5
 
 	--ALTERANDO A SITUAÇÃO DA PARTIDA
@@ -246,18 +236,34 @@ function eventLoop(tempoAtual, tempoRestante)
 				resetTodosMorrem()
 	end
 
+	if num_de_jogadores_vivos == 1 then
+				tfm.exec.setGameTime(5)
+				ui.removeTextArea(id["question_label"])
+				resetTodosMorrem()
+	end
+
 	if timer==58 and not perguntaFeita and num_de_jogadores_vivos > 0 then --MUDAR A QUANTIDADE DE JOGADORES QUANDO O JOGO ESTIVER PRONTO
     fimDoTempo = true
     resetTodosMorrem()
   end
 
 	if necessarioResetar == true then
+		ui.removeTextArea(id["one_player_label"])
+		ui.removeTextArea(id["question_label"])
 		timerReset = timerReset + 0.5
 		if num_de_jogadores_vivos == 0 then
 				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Todos morreram! Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 		end
-		if fimDoTempo then ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Fim do tempo! Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 290, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) end
-		if mestreSkip then ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."O mestre abandonou a partida! Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 290, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) end
+		--DEFININDO O VENCEDOR! FUNCIONA
+		--if num_de_jogadores_vivos == 1 then
+				--for nome, player in next, tfm.get.room.playerList do
+					--if not tfm.get.room.playerList[nome].isDead then
+						--ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."O vencedor é "..nome.."! Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+					--end
+				--end		
+		--end
+		if fimDoTempo then ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Fim do tempo! Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) end
+		if mestreSkip then ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."O mestre abandonou a partida! Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) end
 	end
 
 	if timerReset==5 then
@@ -272,12 +278,13 @@ function eventLoop(tempoAtual, tempoRestante)
 function morte(condicao, numero)
 	if condicao == true then
 		texto = "verdadeiro"
-	end
-	if condicao == false then
+	elseif condicao == false then
 		texto = "falso"
+	else
+		texto = "invalido"
 	end
 
-	ui.addTextArea(id["turn_label1"], "<font size='13'><p align='center'><BL><font color='#8B008B'>".."O número foi: "..numero.." E a resposta é "..texto.."</font></font></p>", p, -230, 30, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+	--ui.addTextArea(id["turn_label1"], "<font size='13'><p align='center'><BL><font color='#8B008B'>".."O número foi: "..numero.." E a resposta é "..texto.."</font></font></p>", p, -230, 30, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 	if condicao == true then
 		if numero == 1 then
 			tfm.exec.removePhysicObject(id["piso_falso"])
@@ -296,6 +303,7 @@ function morte(condicao, numero)
 			tfm.exec.addShamanObject(17, 480, 230, 90, 50, 0, false)
 			tfm.exec.addShamanObject(17, 480, 250, 90, 50, 0, false)
 		end
+		
 
 		atualSituacao = "intervalo"
 	end
@@ -362,7 +370,13 @@ function resetTodosMorrem()
 	atualSituacao ="começo"
 	necessarioResetar = true
 
+	updatePlayersList()
+
 	ui.removeTextArea(id["question_reset"])
+	ui.removeTextArea(id["ask_word_popup"])
+	ui.removeTextArea(id["question_button"])
+	ui.removeTextArea(id["resposta_true"])
+	ui.removeTextArea(id["resposta_false"])
 	rodada = 0
 	pontuacao = -1
 
