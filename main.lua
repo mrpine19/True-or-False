@@ -70,6 +70,9 @@
 	id["jogo_vencido"] = 13
 	id["parede1"] = 14
 	id["parede2"] = 15
+	id["botao_help"] = 16
+	id["help_label"] = 17
+	id["botao_fechar"] = 18
 	------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	--------------------------------------------------------------função que dá as configurações iniciais do jogo------------------------------------------------------------
@@ -84,21 +87,23 @@
 		end 
 		updatePlayersList()
 		--tfm.exec.addImage(String nomeDaImagem, String target, Int posiçãoX, Int posiçãoY, String targetPlayer)
-		tfm.exec.addImage("174042eda4f.png", "%Fake_da_annyxd#7479", -21, -30)
+		--tfm.exec.addImage("174042eda4f.png", "%Fake_da_annyxd#7479", -21, -30)
 		tfm.exec.addImage("1845194669a.png", "?2", 0, 20)
 		--tfm.exec.addImage("15150c10e92.png", "?2", 0, 0)
 
 		--tfm.exec.addImage("1651b3019c0.png", "+9", 0, 0)
-
 			
 		if numeroDeJogadores() > 1 then --MUDAR PARA 2 DEPOIS QUE TERMINAR TUDO
 			mestre = randomPlayer()
 			tfm.exec.killPlayer(mestre)
-			askQuestion()
+			fazerPergunta()
 			ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Aguarde enquanto "..mestre.." faz a pergunta".. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 		else
 			ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..text.more_players.. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)	
 		end
+
+		--BOTÃO DE AJUDA
+		ui.addTextArea(id["botao_help"], "<p align='center'><a href='event:callbackHelp'>".."?".."</a></p>", nil, 730, 35, 10, 20, 0x595959, 0x595959, 1f)
 
 	end
 	------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -113,10 +118,10 @@
 	------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	---------------------------------------------------------------------BOTÃO PERGUNTA-----------------------------------------------------------------------------------------------------------------
-	function askQuestion()
+	function fazerPergunta()
 		if not perguntaFeita then
 			--BOTÃO PERGUNTA:
-			ui.addTextArea(id["question_button"], "<p align='center'><a href='event:callbackAskWord'>"..text.botao_pergunta.."</a></p>", mestre, 300, 120, 210, 20, 0x595959, 0x595959, 1f) --BOTÃO PERGUNTA
+			ui.addTextArea(id["question_button"], "<p align='center'><a href='event:callbackAskWord'><font size='12'>"..text.botao_pergunta.."</a></p>", mestre, 300, 120, 210, 20, 0x595959, 0x595959, 1f) --BOTÃO PERGUNTA
 	    ui.addTextArea(id["turn_label1"], "<font size='13'><p align='center'><BL><font color='#8B008B'>".."É a vez de: "..mestre.."</font></font></p>", p, -230, 30, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)      		
 		end
 	end
@@ -156,34 +161,43 @@
 
 	-----------------------------------------------------QUANDO O MESTRE DECIDE SE É TRUE OR FALSE------------------------------------------------------------
 	function eventTextAreaCallback(textAreaId, playerName, callback)
-	  	if callback=="callbackAskWord" and playerName==mestre then
+	  if callback=="callbackAskWord" and playerName==mestre then
 	  		--addPopup(Int id, Int type, String text, String targetPlayer, Int x, Int y, Int width, Boolean fixedPos (false))
 	    	ui.addPopup(id["ask_word_popup"], 2, text.question, mestre, 300, 120, 200) 
 	  	end
 
-	  	if callback == "callbackTrue" then
-	  		tfm.exec.setGameTime(10)
-	  		tfm.exec.removePhysicObject(id["piso_gelo"])
-	  	 	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 20, 300, 750, 100, 0xC0C0C0, 0xC0C0C0, 0f)
-	  	 	ui.removeTextArea(id["question_button"])
-	  	 	ui.removeTextArea(id["resposta_true"])
-	  	 	ui.removeTextArea(id["resposta_false"])
-	  	 	perguntaFeita = true
-	  	 	resposta = true
+	  if callback == "callbackTrue" then
+	  	tfm.exec.setGameTime(10)
+	  	tfm.exec.removePhysicObject(id["piso_gelo"])
+	   	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 20, 300, 750, 100, 0xC0C0C0, 0xC0C0C0, 0f)
+	 	 	ui.removeTextArea(id["question_button"])
+	 	 	ui.removeTextArea(id["resposta_true"])
+	  	ui.removeTextArea(id["resposta_false"])
+	  	perguntaFeita = true
+	  	resposta = true
+	  end	
 
-	  	end
+	  if callback == "callbackFalse" then
+	  	tfm.exec.setGameTime(10)
+	  	tfm.exec.removePhysicObject(id["piso_gelo"])
+	  	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 20, 300, 750, 100, 0xC0C0C0, 0xC0C0C0, 0f)
+	  	ui.removeTextArea(id["question_button"])
+	  	ui.removeTextArea(id["resposta_true"])
+	  	ui.removeTextArea(id["resposta_false"])
+	  	perguntaFeita = true
+	  	resposta = false
+	  end	
 
-	  	if callback == "callbackFalse" then
-	  		tfm.exec.setGameTime(10)
-	  		tfm.exec.removePhysicObject(id["piso_gelo"])
-	  	 	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 20, 300, 750, 100, 0xC0C0C0, 0xC0C0C0, 0f)
-	  	 	ui.removeTextArea(id["question_button"])
-	  	 	ui.removeTextArea(id["resposta_true"])
-	  	 	ui.removeTextArea(id["resposta_false"])
-	  	 	perguntaFeita = true
-	  	 	resposta = false
-	  	end
-	  	
+	  if callback == "callbackHelp" then
+	  	local help = "O jogo começa com 2 pessoas ou mais na mesma partida. A ideia do jogo é ser colocada a pergunta pelo shaman, de resposta verdadeiro ou falso. Para responder à pergunta do shaman como verdadeiro, (assumindo que “verdadeiro” é a resposta correta), o jogador deve poder escolher cair para a esquerda. No caso inverso, deve poder escolher cair para a direita. O jogador não deve conseguir voltar à sua posição inicial nem sair da área que escolheu a resposta, de modo a ser coroado vencedor da rodada ou ser eliminado. A eliminação acontece quando o jogador erra a resposta (escolheu verdadeiro, mas o shaman determinou que era falso). O shaman não deve conseguir sair fora da sua área de spawn. Os jogadores só devem conseguir sair fora da sua área de spawn quando for para se dirigirem ao local da resposta."
+	  	ui.addTextArea(id["help_label"], "<p align='center'><font size='12'>" .. help .. "</a></p>", playerName, 140, 60, 575, 250, 0xf, 0xf, 2, true)
+	  	ui.addTextArea(id["botao_fechar"], "<a href='event:callbackClose'><p align='center'><font size='30'>" .. "Fechar" .. "</a></p>", playerName, 350, 330, 150, 50, 0x595959, 0x595959, 1f)
+	  end
+
+	  if callback == "callbackClose" then
+	  	ui.removeTextArea(id["help_label"])
+	  	ui.removeTextArea(id["botao_fechar"])
+	  end
 	end
 
 	function eventPopupAnswer(popupId, playerName, answer)
@@ -193,7 +207,6 @@
 	  	ui.addTextArea(id["resposta_true"], "<p align='center'><a href='event:callbackTrue'>"..text.verdadeiro.."</a></p>", mestre, 330, 150, 80, 20, 0x595959, 0x595959, 1f)
 	  	ui.addTextArea(id["resposta_false"], "<p align='center'><a href='event:callbackFalse'>"..text.falso.."</a></p>", mestre, 430, 150, 50, 20, 0x595959, 0x595959, 1f)
 	    ui.removeTextArea(id["one_player_label"]) 
-
 	  end
 	end
 
@@ -208,15 +221,16 @@
 			novaPergunta()
 		end
 
+
 		if tempoRestante < 1250 and atualSituacao == "pergunta" then
 			for name,player in next,tfm.get.room.playerList do
-				if tfm.get.room.playerList[name].y >= 157 and tfm.get.room.playerList[name].y <= 200 then
+				if tfm.get.room.playerList[name].y >= 0 and tfm.get.room.playerList[name].y <= 200 then
 					tfm.exec.killPlayer(name)
 				end
 			end
 			tfm.exec.setGameTime(6)
 
-			morte(resposta, 5)
+			morte(resposta,math.random(1,5))
 		end
 
 		if atualSituacao == "pergunta" and tempoRestante >= 1 then
@@ -242,7 +256,7 @@
 					--resetTodosMorrem()
 		--end
 
-		if timer==58 and not perguntaFeita and num_de_jogadores_vivos > 0 then --MUDAR A QUANTIDADE DE JOGADORES QUANDO O JOGO ESTIVER PRONTO
+		if timer==59 and not perguntaFeita and num_de_jogadores_vivos > 0 then --MUDAR A QUANTIDADE DE JOGADORES QUANDO O JOGO ESTIVER PRONTO
 	    fimDoTempo = true
 	    resetTodosMorrem()
 	  end
@@ -262,7 +276,10 @@
 						--end
 					--end		
 			--end
-			if fimDoTempo then ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Fim do tempo! Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) end
+			if fimDoTempo then 
+				ui.removeTextArea(id["question_button"])
+				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Fim do tempo! Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
+			end
 			if mestreSkip then ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."O mestre abandonou a partida! Próxima rodada em "..math.floor(5 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) end
 		end
 
@@ -290,7 +307,8 @@
 				tfm.exec.removePhysicObject(id["piso_falso"])
 			end
 			if numero == 2 then
-				tfm.exec.addPhysicObject(id["piso_falso"], 618, 275, pisoTransparente)
+				tfm.exec.removePhysicObject(id["piso_falso"])
+				tfm.exec.addPhysicObject(id["piso_falso"], 180, 275, pisoTransparente)
 			end
 			if numero == 3 then
 				tfm.exec.addPhysicObject(id["piso_falso"], 618, 273, pisoAcido)		
@@ -319,7 +337,8 @@
 				tfm.exec.removePhysicObject(id["piso_verdadeiro"])
 			end	
 			if numero == 2 then
-				tfm.exec.addPhysicObject(id["piso_verdadeiro"], 180, 275, pisoTransparente)
+				tfm.exec.removePhysicObject(id["piso_verdadeiro"])
+				tfm.exec.addPhysicObject(id["piso_verdadeiro"], 618, 275, pisoTransparente)
 			end
 			if numero == 3 then
 				tfm.exec.addPhysicObject(id["piso_verdadeiro"], 180, 275, pisoAcido)		
@@ -348,17 +367,23 @@
 	------------------------------------------------DEPOIS QUE A GALERA MORRE E PRECISA DE UMA NOVA PERGUNTA------------------------------------------------------------
 	function novaPergunta()
 		perguntaFeita = false
+		timer = 0
 		rodada = rodada + 1
 		pontuacao = pontuacao + 1
 		ui.removeTextArea(id["question_label"])
+
+		--tfm.get.room.playerList[name].y >=0
 		for name,player in next,tfm.get.room.playerList do
 			tfm.exec.movePlayer(name,400,60,false)
-			if (name~=mestre) then
+			if not tfm.get.room.playerList[name].isDead then
 				if (rodada == 1) then
 					tfm.exec.setPlayerScore(name, 0, false)
 				else
 	  			tfm.exec.setPlayerScore(name, pontuacao, false)
 	  		end
+			end
+			if (name~=mestre) then
+				ui.removeTextArea(id["question_button"])
 	  	end
 		end
 		atualSituacao = "pergunta"
@@ -369,7 +394,7 @@
 		tfm.exec.addPhysicObject(id["piso_falso"], 618, 275, pisoFalse)
 		tfm.exec.addPhysicObject(id["parede1"], 20, 200, pisoParede)
 		tfm.exec.addPhysicObject(id["parede2"], 780, 200, pisoParede)
-		askQuestion()
+		fazerPergunta()
 		atualSituacao = "pergunta"
 		ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Aguarde enquanto "..mestre.." faz a pergunta".. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 	end
