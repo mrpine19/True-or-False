@@ -11,6 +11,7 @@ local antigoMestre = ""
 local players = {} -- armazena a quantidade de jogadores da sala
 local lang = {} -- armazena as mensagens do jogo
 local id = {}
+local vencedor = ""
 
 
 local perguntaFeita = false
@@ -20,6 +21,7 @@ local hasLost = false
 local hasToReset = false
 local mestreSkip = false
 local mestreOut = false
+local temVencedor = false
 
 
 local atualSituacao = "começo"
@@ -33,12 +35,13 @@ local pontuacao = -1
 
 lang.br = {
 
-	botao_pergunta = "Clique aqui para fazer a pergunta",
-	pergunta = "Digite a pergunta: ",
+	question_button = "Clique aqui para fazer a pergunta",
 	more_players = "Deve ter, no mínimo, dois jogadores para o jogo começar!",
 	question = "Digite a pergunta: ",
-	verdadeiro = "Verdadeiro",
-	falso = "Falso"
+	true_answer = "Verdadeiro",
+	false_answer = "Falso",
+	mapa_name = "Verdadeiro ou Falso!",
+	live_mices = "Ratos vivos:"
 	
 }
 
@@ -96,16 +99,22 @@ function eventNewGame()
 	--tfm.exec.addImage("15150c10e92.png", "?2", 0, 0)
 	--tfm.exec.addImage("1651b3019c0.png", "+9", 0, 0)
 		
-	if numeroDeJogadores() >= 2 then --MUDAR PARA 2 DEPOIS QUE TERMINAR TUDO
+	if numeroDeJogadores() >= 2 and not temVencedor then --MUDAR PARA 2 DEPOIS QUE TERMINAR TUDO
 		antigoMestre = mestre
 
 		while(antigoMestre == mestre) do
 			mestre = randomPlayer()
 		end
 		tfm.exec.killPlayer(mestre)
-	else
+	end
+	if numeroDeJogadores() < 1 and not temVencedor then
 		mestre = ""
 		ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..text.more_players.. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)	
+	end
+	if numeroDeJogadores() >= 2 and temVencedor then
+		mestre = vencedor
+		temVencedor = false
+		tfm.exec.killPlayer(mestre)
 	end
 	novaPergunta()
 	--BOTÃO DE AJUDA
@@ -125,7 +134,7 @@ end
 function fazerPergunta()
 	if not perguntaFeita and numeroDeJogadores() > 1 then
 		--BOTÃO PERGUNTA:
-		ui.addTextArea(id["question_button"], "<p align='center'><a href='event:callbackAskWord'><font size='11'>"..text.botao_pergunta.."</a></p>", mestre, 295, 150, 210, 20, nil, nil, 1f) --BOTÃO PERGUNTA
+		ui.addTextArea(id["question_button"], "<p align='center'><a href='event:callbackAskWord'><font size='11'>"..text.question_button.."</a></p>", mestre, 295, 150, 210, 20, nil, nil, 1f) --BOTÃO PERGUNTA
     end
 end
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -198,7 +207,7 @@ function eventTextAreaCallback(textAreaId, playerName, callback)
   end	
 
   if callback == "callbackHelp" then
-  	local help = "<p align='center'>CLICK:                      .<BR><BR><BR><p align='left'><ROSE>Idealizadora e Designer: <N>Fake_da_annyxd#7479 <BR><BV>Programador: <N>Homerre#0000 <BR><BR><p align='center'><CE>Regras do module <BR><BR><p align='LEFT'><N>O jogo tem como objetivo responder às perguntas do shaman como verdadeiro ou falso. O shaman tem determinado tempo para colocar a pergunta, que deve ser possível responder com verdadeiro ou falso. Quem responder a todas as perguntas certo é o shaman na próxima rodada. (pode melhorar)<BR><BR><p align='center'><CE>Comandos<BR><BR><p align='left'><A:ACTIVE>!help <N>- mostra as informações do jogo<BR><A:ACTIVE>!q <N>- abre a caixa de perguntas<BR><A:ACTIVE>!skip <N>- pula a vez do mestre<BR>"
+  	local help = "<p align='center'>CLICK:                      .<BR><BR><BR><p align='left'><ROSE>Idealizadora e Maleiro: <N>Fake_da_annyxd#7479 <BR><BV>Programador: <N>Homerre#0000 <BR><BR><p align='center'><CE>Regras do module <BR><BR><p align='LEFT'><N>O jogo tem como objetivo responder às perguntas do shaman como verdadeiro ou falso. O shaman tem determinado tempo para colocar a pergunta, que deve ser possível responder com verdadeiro ou falso. Quem responder a todas as perguntas certo é o shaman na próxima rodada. (pode melhorar)<BR><BR><p align='center'><CE>Comandos<BR><BR><p align='left'><A:ACTIVE>!help <N>- mostra as informações do jogo<BR><A:ACTIVE>!q <N>- abre a caixa de perguntas<BR><A:ACTIVE>!skip <N>- pula a vez do mestre<BR>"
 		ui.addTextArea(id["fundo_help"], " ", playerName, 112, 50, 575, 320, nil, nil, 1.0, true)
   	ui.addTextArea(id["help_label"], "<font size='12'>" .. help .. "</a></p>", playerName, 140, 60, 530, 300, 0xf, 0xf, 2, true)
   	ui.addTextArea(id["botao_fechar"], "<a href='event:callbackClose'><p align='center'><font size='20'>" .. "Fechar" .. "</a></p>", playerName, 359, 330, 80, 30, nil, nil, 1f, true)
@@ -227,15 +236,15 @@ function eventPopupAnswer(popupId, playerName, answer)
   if popupId==id["ask_word_popup"] and mestre==playerName then
   	--criar cenário pós pergunta ser enviada
   	questionPlayer = answer
-  	ui.addTextArea(id["resposta_true"], "<p align='center'><a href='event:callbackTrue'>"..text.verdadeiro.."</a></p>", mestre, 142, 200, 80, 20, nil, nil, 1f)
-  	ui.addTextArea(id["resposta_false"], "<p align='center'><a href='event:callbackFalse'>"..text.falso.."</a></p>", mestre, 593, 200, 50, 20, nil, nil, 1f)
+  	ui.addTextArea(id["resposta_true"], "<p align='center'><a href='event:callbackTrue'>"..text.true_answer.."</a></p>", mestre, 142, 200, 80, 20, nil, nil, 1f)
+  	ui.addTextArea(id["resposta_false"], "<p align='center'><a href='event:callbackFalse'>"..text.false_answer.."</a></p>", mestre, 593, 200, 50, 20, nil, nil, 1f)
     ui.removeTextArea(id["one_player_label"]) 
   end
 end
 
 
 function eventLoop(tempoAtual, tempoRestante)
-	ui.setMapName("<N><J>Verdadeiro ou falso <N>    Ratos vivos: <V>"..num_de_jogadores_vivos.."</V> de <J>"..qtd_de_jogadores.." <BL>|<N> Rodada atual: <V>"..rodada.." | <VP><b>Mestre atual: </b><N><ROSE>"..mestre.."<BL><")
+	ui.setMapName("<N><J>"..text.mapa_name.." <N>   Ratos vivos: <V>"..num_de_jogadores_vivos.."</V> de <J>"..qtd_de_jogadores.." <BL>|<N> Rodada atual: <V>"..rodada.." | <VP><b>Mestre atual: </b><N><ROSE>"..mestre.."<BL><")
 	timer = timer + 0.5
 
 	--ALTERANDO A SITUAÇÃO DA PARTIDA
@@ -272,11 +281,11 @@ function eventLoop(tempoAtual, tempoRestante)
 				reset()
 	end
 	--FAZ PARTE PARA DEFINIR O VENCEDOR
-	--if num_de_jogadores_vivos == 1 then
-				--tfm.exec.setGameTime(5)
-				--ui.removeTextArea(id["question_label"])
-				--reset()
-	--end
+	if num_de_jogadores_vivos == 1 and tempoRestante <= 1 then
+				tfm.exec.setGameTime(5)
+				ui.removeTextArea(id["question_label"])
+				reset()
+	end
 
 	if timer == 61 and not perguntaFeita and num_de_jogadores_vivos >= 2 then --MUDAR A QUANTIDADE DE JOGADORES QUANDO O JOGO ESTIVER PRONTO
     fimDoTempo = true
@@ -291,13 +300,15 @@ function eventLoop(tempoAtual, tempoRestante)
 				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Todos morreram! Próxima rodada em "..math.floor(6 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 		end
 		--DEFININDO O VENCEDOR! FUNCIONA
-		--if num_de_jogadores_vivos == 1 then
-				--for nome, player in next, tfm.get.room.playerList do
-					--if not tfm.get.room.playerList[nome].isDead then
-						--ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."O vencedor é "..nome.."! Próxima rodada em "..math.floor(6 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
-					--end
-				--end		
-		--end
+		if num_de_jogadores_vivos == 1 then
+				for nome, player in next, tfm.get.room.playerList do
+					if not tfm.get.room.playerList[nome].isDead then
+						ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."O vencedor é "..nome.."! Próxima rodada em "..math.floor(6 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+						vencedor = nome
+						temVencedor = true
+					end
+				end		
+		end
 		if fimDoTempo then 
 			ui.removeTextArea(id["question_button"])
 			ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Fim do tempo! Próxima rodada em "..math.floor(6 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
