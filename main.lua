@@ -40,8 +40,18 @@ lang.br = {
 	question = "Digite a pergunta: ",
 	true_answer = "Verdadeiro",
 	false_answer = "Falso",
-	mapa_name = "Verdadeiro ou Falso!",
-	live_mices = "Ratos vivos:"
+	map_name = "Verdadeiro ou Falso!",
+	live_mices = "Ratos vivos:",
+	waiting_question1 = "Aguarde enquanto ",
+	waiting_question2 = " faz a pergunta",
+	next_round = " Próxima rodada em ",
+	seconds = " segundos",
+	everybody_died = "Todos morreram!",
+	winner = "O vencedor é ",
+	no_time = "Tempo esgotado!",
+	mestre_out = "O mestre abandonou a partida!",
+	mestre_skip = " pulou a sua vez!",
+	close = "Fechar",
 	
 }
 
@@ -82,24 +92,55 @@ id["uk"] = 21
 id["es"] = 22
 id["fr"] = 23
 id["time"] = 24
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+---------------------------------------------FUNCTIONS SOBRE A ENTRADA E SAIDA DE JOGADORES------------------------------------------------------------
+
+function numeroDeJogadores() -- pega a quantidade de jogadores da sala
+	return qtd_de_jogadores + 1
+end
+
+function eventPlayerDied(name)
+	num_de_jogadores_vivos = num_de_jogadores_vivos - 1
+end
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+function eventNewPlayer(nomeDoJogador)
+  qtd_de_jogadores = qtd_de_jogadores + 1
+  if numeroDeJogadores() == 2 then
+  	tfm.exec.newGame("@7917347")
+  end
+end
+
+for name,player in next,tfm.get.room.playerList do
+	eventNewPlayer(name)
+end
+
+function eventPlayerLeft(name)
+	qtd_de_jogadores = qtd_de_jogadores - 1
+	if name == mestre then
+		mestreOut = true
+		reset()
+	end
+	if numeroDeJogadores() == 1 then
+		reset()
+	end
+end
+--------------------------------------------------------FUNCTION PARA DEFINIR O MESTRE------------------------------------------------------------
+function randomPlayer()
+	return players[math.random(1,#players)]
+end
 --------------------------------------------------------------função que dá as configurações iniciais do jogo------------------------------------------------------------
 function eventNewGame()
 	perguntaFeita = false
 	num_de_jogadores_vivos = 0
-	--DEFININDO A QUANTIDADE DE JOGADORES
 	for name,player in next,tfm.get.room.playerList do
 		num_de_jogadores_vivos=num_de_jogadores_vivos+1
 	end 
+
 	updatePlayersList()
-	--tfm.exec.addImage(String nomeDaImagem, String target, Int posiçãoX, Int posiçãoY, String targetPlayer)
-	--tfm.exec.addImage("174042eda4f.png", "%Fake_da_annyxd#7479", -21, -30)
+	tfm.exec.addImage("174042eda4f.png", "%Fake_da_annyxd#7479", -21, -30)
 	tfm.exec.addImage("1845194669a.png", "?1", 0, 20)
-	--tfm.exec.addImage("15150c10e92.png", "?2", 0, 0)
-	--tfm.exec.addImage("1651b3019c0.png", "+9", 0, 0)
 		
-	if numeroDeJogadores() >= 2 and not temVencedor then --MUDAR PARA 2 DEPOIS QUE TERMINAR TUDO
+	if numeroDeJogadores() >= 1 and not temVencedor then --MUDAR PARA 2 DEPOIS QUE TERMINAR TUDO
 		antigoMestre = mestre
 
 		while(antigoMestre == mestre) do
@@ -107,21 +148,67 @@ function eventNewGame()
 		end
 		tfm.exec.killPlayer(mestre)
 	end
+
 	if numeroDeJogadores() < 1 and not temVencedor then
 		mestre = ""
 		ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..text.more_players.. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)	
 	end
-	if numeroDeJogadores() >= 2 and temVencedor then
+
+	if numeroDeJogadores() >= 1 and temVencedor then
 		mestre = vencedor
 		temVencedor = false
 		tfm.exec.killPlayer(mestre)
 	end
+
 	novaPergunta()
 	--BOTÃO DE AJUDA
 	ui.addTextArea(id["botao_help"], "<font size='18'><p align='center'><a href='event:callbackHelp'>".."H".."</font></a></p>", nil, 720, 35, 20, 25, nil, nil, 1f)
 
 end
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------CRIAÇÃO DO CENÁRIO DA PERGUNTA------------------------------------------------------------
+function novaPergunta()
+	perguntaFeita = false
+
+	if numeroDeJogadores() >= 1 then --MUDAR PARA 2 DEPOIS QUE TERMINAR TUDO
+		timer = 0
+		rodada = rodada + 1
+		pontuacao = pontuacao + 1
+		ui.removeTextArea(id["question_label"])
+
+		for name,player in next,tfm.get.room.playerList do
+			tfm.exec.movePlayer(name,400,60,false)
+			if not tfm.get.room.playerList[name].isDead then
+  			tfm.exec.setPlayerScore(name, pontuacao, false)
+			end
+			if (name~=mestre) then
+				ui.removeTextArea(id["question_button"])
+  		end
+		end
+
+		if rodada <= 10 then
+			tfm.exec.setGameTime(62)
+		elseif rodada > 10 and rodada <=20 then
+			tfm.exec.setGameTime(47)
+		elseif rodada > 20 then
+			tfm.exec.setGameTime(32)
+		end
+
+		ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..text.waiting_question1..mestre..text.waiting_question2.. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+		atualSituacao = "pergunta"
+		resposta = ""
+		fazerPergunta()
+	else
+		ui.addTextArea(id["time"],"<p align='center'><font size='45'>".."0".."",nil,360,213,80,60,0x000001,0x494949,1.0)
+		ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..text.more_players.. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)	
+	end
+
+	tfm.exec.addPhysicObject(id["piso_gelo"], 400, 120, pisoGelo)
+	tfm.exec.addPhysicObject(id["piso_verdadeiro"], 182, 275, pisoTrue)
+	tfm.exec.addPhysicObject(id["piso_falso"], 618, 275, pisoFalse)
+	tfm.exec.addPhysicObject(id["parede1"], 20, 200, pisoParede)
+	tfm.exec.addPhysicObject(id["parede2"], 780, 200, pisoParede)
+end
 --------------------------------------------------------------ATUALIZA A LISTA DE JOGADORES DA SALA------------------------------------------------------------
 function updatePlayersList()
   for p,_ in pairs(tfm.get.room.playerList) do
@@ -137,45 +224,6 @@ function fazerPergunta()
 		ui.addTextArea(id["question_button"], "<p align='center'><a href='event:callbackAskWord'><font size='11'>"..text.question_button.."</a></p>", mestre, 295, 150, 210, 20, nil, nil, 1f) --BOTÃO PERGUNTA
     end
 end
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
----------------------------------------------FUNCTIONS SOBRE A ENTRADA E SAIDA DE JOGADORES------------------------------------------------------------
-
-function numeroDeJogadores() -- pega a quantidade de jogadores da sala
-	return qtd_de_jogadores + 1
-end
-
-function eventNewPlayer(nomeDoJogador)
-  qtd_de_jogadores = qtd_de_jogadores + 1
-  if numeroDeJogadores() == 2 then
-  	tfm.exec.newGame("@7917347")
-  end
-end
-
-for name,player in next,tfm.get.room.playerList do
-	eventNewPlayer(name)
-end
-function eventPlayerLeft(name)
-	qtd_de_jogadores = qtd_de_jogadores - 1
-	if name == mestre then
-		mestreOut = true
-		reset()
-	end
-	if numeroDeJogadores() == 1 then
-		reset()
-	end
-end
-function eventPlayerDied(name)
-	num_de_jogadores_vivos = num_de_jogadores_vivos - 1
-end
-
---------------------------------------------FALTA DEFINIR QUANDO O JOGADOR SAIR DA SALA------------------------------------------------------------
-
---------------------------------------------------------FUNCTION PARA DEFINIR O MESTRE------------------------------------------------------------
-function randomPlayer()
-	return players[math.random(1,#players)]
-end
-
 
 -----------------------------------------------------QUANDO O MESTRE DECIDE SE É TRUE OR FALSE------------------------------------------------------------
 function eventTextAreaCallback(textAreaId, playerName, callback)
@@ -185,10 +233,10 @@ function eventTextAreaCallback(textAreaId, playerName, callback)
   end
 
   if callback == "callbackTrue" then
-  	
+  	ui.removeTextArea(id["one_player_label"]) 
   	tfm.exec.setGameTime(12)
   	tfm.exec.removePhysicObject(id["piso_gelo"])
-   	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 20, 300, 750, 100, 0xC0C0C0, 0xC0C0C0, 0f)
+   	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 40, 300, 720, 100, 0xC0C0C0, 0xC0C0C0, 0f)
  	 	ui.removeTextArea(id["question_button"])
  	 	ui.removeTextArea(id["resposta_true"])
   	ui.removeTextArea(id["resposta_false"])
@@ -197,9 +245,10 @@ function eventTextAreaCallback(textAreaId, playerName, callback)
   end	
 
   if callback == "callbackFalse" then
+  	ui.removeTextArea(id["one_player_label"]) 
   	tfm.exec.setGameTime(12)
   	tfm.exec.removePhysicObject(id["piso_gelo"])
-  	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 20, 300, 750, 100, 0xC0C0C0, 0xC0C0C0, 0f)
+  	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 40, 300, 720, 100, 0xC0C0C0, 0xC0C0C0, 0f)
   	ui.removeTextArea(id["question_button"])
   	ui.removeTextArea(id["resposta_true"])
   	ui.removeTextArea(id["resposta_false"])
@@ -210,8 +259,8 @@ function eventTextAreaCallback(textAreaId, playerName, callback)
   if callback == "callbackHelp" then
   	local help = "<p align='left'><ROSE>Idea, mapa e regras do jogo: <N>Fake_da_annyxd#7479 <BR><BV>Programador: <N>Homerre#0000 <BR><BR><p align='center'><CE>Regras do module <BR><BR><p align='LEFT'><N>O jogo tem como objetivo responder às perguntas do shaman como verdadeiro ou falso. O shaman tem determinado tempo para colocar a pergunta, que deve ser possível responder com verdadeiro ou falso. Quem responder a todas as perguntas certo é o shaman na próxima rodada. (pode melhorar)<BR><BR><p align='center'><CE>Comandos<BR><BR><p align='left'><A:ACTIVE>!help <N>- mostra as informações do jogo<BR><A:ACTIVE>!q <N>- abre a caixa de perguntas<BR><A:ACTIVE>!skip <N>- pula a vez do mestre<BR>"
 		ui.addTextArea(id["fundo_help"], " ", playerName, 112, 50, 575, 320, nil, nil, 1.0, true)
-  	ui.addTextArea(id["help_label"], "<font size='12'>" .. help .. "</a></p>", playerName, 140, 60, 530, 300, 0xf, 0xf, 2, true)
-  	ui.addTextArea(id["botao_fechar"], "<a href='event:callbackClose'><p align='center'><font size='20'>" .. "Fechar" .. "</a></p>", playerName, 359, 330, 80, 30, nil, nil, 1f, true)
+  	ui.addTextArea(id["help_label"], "<font size='12'>" ..help.. "</a></p>", playerName, 140, 60, 530, 300, 0xf, 0xf, 2, true)
+  	ui.addTextArea(id["botao_fechar"], "<a href='event:callbackClose'><p align='center'><font size='20'>" ..text.close.. "</a></p>", playerName, 359, 330, 80, 30, nil, nil, 1f, true)
   
   	--IMAGENS DAS BANDEIRAS:
   	--tfm.exec.addImage("1651b3019c0.png", "&19", 390, 65, playerName)
@@ -244,16 +293,16 @@ end
 
 
 function eventLoop(tempoAtual, tempoRestante)
-	ui.setMapName("<N><J>"..text.mapa_name.." <N>   Ratos vivos: <V>"..num_de_jogadores_vivos.."</V> de <J>"..qtd_de_jogadores.." <BL>|<N> Rodada atual: <V>"..rodada.." | <VP><b>Mestre atual: </b><N><ROSE>"..mestre.."<BL><")
+	ui.setMapName("<N><J>"..text.map_name.." <N>   "..text.live_mices.." <V>"..num_de_jogadores_vivos.."</V> de <J>"..qtd_de_jogadores.." <BL>|<N> Rodada atual: <V>"..rodada.." | <VP><b>Mestre atual: </b><N><ROSE>"..mestre.."<BL><")
 	timer = timer + 0.5
 
 	--ALTERANDO A SITUAÇÃO DA PARTIDA
-	if tempoAtual < 2000 and atualSituacao == "começo" and numeroDeJogadores() >= 2 then
+	if tempoAtual < 2000 and atualSituacao == "começo" and numeroDeJogadores() >= 1 then
 		atualSituacao = "pergunta"
 		novaPergunta()
 	end
 
-	if tempoRestante < 1250 and atualSituacao == "pergunta" then
+	if tempoRestante < 1250 and atualSituacao == "pergunta" and perguntaFeita then
 		for name,player in next,tfm.get.room.playerList do
 			if tfm.get.room.playerList[name].y >= 0 and tfm.get.room.playerList[name].y <= 200 then
 				tfm.exec.killPlayer(name)
@@ -269,11 +318,9 @@ function eventLoop(tempoAtual, tempoRestante)
 		ui.addTextArea(id["time"],"<p align='center'><font size='45'>"..math.floor((tempoRestante/1000)-1).."",nil,360,213,80,60,0x000001,0x494949,1.0)
 	end
 
-	--1 segundo = 1000 milisegundos 0,00
 	if tempoRestante < 1 and atualSituacao == "intervalo" then
-				novaPergunta()
+			novaPergunta()
 	end
-
 
 	if num_de_jogadores_vivos == 0 then
 				tfm.exec.setGameTime(5)
@@ -281,13 +328,13 @@ function eventLoop(tempoAtual, tempoRestante)
 				reset()
 	end
 	--FAZ PARTE PARA DEFINIR O VENCEDOR
-	if num_de_jogadores_vivos == 1 and tempoRestante <= 1 then
-				tfm.exec.setGameTime(5)
-				ui.removeTextArea(id["question_label"])
-				reset()
-	end
+	--if num_de_jogadores_vivos == 1 and tempoRestante <= 1 then
+				--tfm.exec.setGameTime(5)
+				--ui.removeTextArea(id["question_label"])
+				--reset()
+	--end
 
-	if timer == 61 and not perguntaFeita and num_de_jogadores_vivos >= 2 then --MUDAR A QUANTIDADE DE JOGADORES QUANDO O JOGO ESTIVER PRONTO
+	if math.floor((tempoRestante/1000)-1) == 0 and not perguntaFeita and num_de_jogadores_vivos >= 1 then --MUDAR A QUANTIDADE DE JOGADORES QUANDO O JOGO ESTIVER PRONTO
     fimDoTempo = true
     reset()
   end
@@ -297,27 +344,27 @@ function eventLoop(tempoAtual, tempoRestante)
 		ui.removeTextArea(id["question_label"])
 		timerReset = timerReset + 0.5
 		if num_de_jogadores_vivos == 0 then
-				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Todos morreram! Próxima rodada em "..math.floor(6 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..text.everybody_died..text.next_round..math.floor(6 - timerReset)..text.seconds.."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 		end
 		--DEFININDO O VENCEDOR! FUNCIONA
-		if num_de_jogadores_vivos == 1 then
-				for nome, player in next, tfm.get.room.playerList do
-					if not tfm.get.room.playerList[nome].isDead then
-						ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."O vencedor é "..nome.."! Próxima rodada em "..math.floor(6 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
-						vencedor = nome
-						temVencedor = true
-					end
-				end		
-		end
+		--if num_de_jogadores_vivos == 1 then
+				--for nome, player in next, tfm.get.room.playerList do
+					--if not tfm.get.room.playerList[nome].isDead then
+						--ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..text.winner..nome.."!"..text.next_round..math.floor(6 - timerReset)..text.seconds.."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+						--vencedor = nome
+						--temVencedor = true
+					--end
+				--end		
+		--end
 		if fimDoTempo then 
 			ui.removeTextArea(id["question_button"])
-			ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Fim do tempo! Próxima rodada em "..math.floor(6 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
+			ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..text.no_time..text.next_round..math.floor(6 - timerReset)..text.seconds.."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
 		end
 		if mestreOut then 
-			ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."O mestre abandonou a partida! Próxima rodada em "..math.floor(6 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
+			ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..text.mestre_out..text.next_round..math.floor(6 - timerReset)..text.seconds.."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
 		end
 		if mestreSkip then
-			ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..mestre.." pulou a sua vez! Próxima rodada em "..math.floor(6 - timerReset).." segundos".."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+			ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..mestre..text.mestre_skip..text.next_round..math.floor(6 - timerReset)..text.seconds.."</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 		end	
 	end
 
@@ -394,60 +441,7 @@ function morte(condicao, numero)
 	atualSituacao = "intervalo"
 end
 
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-------------------------------------------------DEPOIS QUE A GALERA MORRE E PRECISA DE UMA NOVA PERGUNTA------------------------------------------------------------
-function novaPergunta()
-	perguntaFeita = false
-	
-
-	if numeroDeJogadores() >= 2 then --MUDAR PARA 2 DEPOIS QUE TERMINAR TUDO
-		timer = 0
-		rodada = rodada + 1
-		pontuacao = pontuacao + 1
-		ui.removeTextArea(id["question_label"])
-
-		--tfm.get.room.playerList[name].y >=0
-		for name,player in next,tfm.get.room.playerList do
-			tfm.exec.movePlayer(name,400,60,false)
-			if not tfm.get.room.playerList[name].isDead then
-				if (rodada == 1) then
-					tfm.exec.setPlayerScore(name, 0, false)
-				else
-  				tfm.exec.setPlayerScore(name, pontuacao, false)
-  			end
-			end
-			if (name~=mestre) then
-				ui.removeTextArea(id["question_button"])
-  		end
-		end
-
-		if rodada <= 10 then
-			tfm.exec.setGameTime(62)
-		elseif rodada > 10 and rodada <=20 then
-			tfm.exec.setGameTime(47)
-		elseif rodada > 20 then
-			tfm.exec.setGameTime(32)
-		end
-
-		ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Aguarde enquanto "..mestre.." faz a pergunta".. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
-		atualSituacao = "pergunta"
-		resposta = ""
-		fazerPergunta()
-	else
-		ui.addTextArea(id["time"],"<p align='center'><font size='45'>".."0".."",nil,360,213,80,60,0x000001,0x494949,1.0)
-		ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..text.more_players.. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)	
-	end
-
-	tfm.exec.addPhysicObject(id["piso_gelo"], 400, 120, pisoGelo)
-	tfm.exec.addPhysicObject(id["piso_verdadeiro"], 182, 275, pisoTrue)
-	tfm.exec.addPhysicObject(id["piso_falso"], 618, 275, pisoFalse)
-	tfm.exec.addPhysicObject(id["parede1"], 20, 200, pisoParede)
-	tfm.exec.addPhysicObject(id["parede2"], 780, 200, pisoParede)
-	--ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."Aguarde enquanto "..mestre.." faz a pergunta".. "</font></font></p>", nil, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
-end
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ------------------------------------------------------------PRECISA MELHORAR O RESET---------------------------------------------------------------------------------------------------------------
 
@@ -490,16 +484,7 @@ function eventChatCommand(playerName, message)
 		eventTextAreaCallback(0, playerName, "callbackHelp")
 	end
 end
+
 system.disableChatCommandDisplay(skip, true)
 system.disableChatCommandDisplay(q, true)
 system.disableChatCommandDisplay(help, true)
-
-function eventMouse(playerName, x, y)
-	--tfm.exec.addImage("1651b3019c0.png", "&19", 390, 65, playerName)
-	if x == 390 and y == 65 then
-		eventTextAreaCallback(0, playerName, "callbackClose")
-	end
-end
-
-
-tfm.exec.newGame("@7917347")
