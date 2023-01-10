@@ -118,7 +118,7 @@ function eventNewGame()
 	end
 	novaPergunta()
 	--BOTÃO DE AJUDA
-	ui.addTextArea(id["botao_help"], "<font size='18'><p align='center'><a href='event:callbackHelp'>".."?".."</font></a></p>", nil, 725, 35, 15, 25, nil, nil, 1f)
+	ui.addTextArea(id["botao_help"], "<font size='18'><p align='center'><a href='event:callbackHelp'>".."H".."</font></a></p>", nil, 720, 35, 20, 25, nil, nil, 1f)
 
 end
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -180,11 +180,12 @@ end
 -----------------------------------------------------QUANDO O MESTRE DECIDE SE É TRUE OR FALSE------------------------------------------------------------
 function eventTextAreaCallback(textAreaId, playerName, callback)
   if callback=="callbackAskWord" and playerName==mestre then
-  		--addPopup(Int id, Int type, String text, String targetPlayer, Int x, Int y, Int width, Boolean fixedPos (false))
-    	ui.addPopup(id["ask_word_popup"], 2, text.question, mestre, 300, 120, 200) 
-  	end
+  	--addPopup(Int id, Int type, String text, String targetPlayer, Int x, Int y, Int width, Boolean fixedPos (false))
+    ui.addPopup(id["ask_word_popup"], 2, text.question, mestre, 300, 120, 200) 
+  end
 
   if callback == "callbackTrue" then
+  	
   	tfm.exec.setGameTime(12)
   	tfm.exec.removePhysicObject(id["piso_gelo"])
    	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 20, 300, 750, 100, 0xC0C0C0, 0xC0C0C0, 0f)
@@ -207,16 +208,16 @@ function eventTextAreaCallback(textAreaId, playerName, callback)
   end	
 
   if callback == "callbackHelp" then
-  	local help = "<p align='center'>CLICK:                      .<BR><BR><BR><p align='left'><ROSE>Idealizadora e Maleiro: <N>Fake_da_annyxd#7479 <BR><BV>Programador: <N>Homerre#0000 <BR><BR><p align='center'><CE>Regras do module <BR><BR><p align='LEFT'><N>O jogo tem como objetivo responder às perguntas do shaman como verdadeiro ou falso. O shaman tem determinado tempo para colocar a pergunta, que deve ser possível responder com verdadeiro ou falso. Quem responder a todas as perguntas certo é o shaman na próxima rodada. (pode melhorar)<BR><BR><p align='center'><CE>Comandos<BR><BR><p align='left'><A:ACTIVE>!help <N>- mostra as informações do jogo<BR><A:ACTIVE>!q <N>- abre a caixa de perguntas<BR><A:ACTIVE>!skip <N>- pula a vez do mestre<BR>"
+  	local help = "<p align='left'><ROSE>Idea, mapa e regras do jogo: <N>Fake_da_annyxd#7479 <BR><BV>Programador: <N>Homerre#0000 <BR><BR><p align='center'><CE>Regras do module <BR><BR><p align='LEFT'><N>O jogo tem como objetivo responder às perguntas do shaman como verdadeiro ou falso. O shaman tem determinado tempo para colocar a pergunta, que deve ser possível responder com verdadeiro ou falso. Quem responder a todas as perguntas certo é o shaman na próxima rodada. (pode melhorar)<BR><BR><p align='center'><CE>Comandos<BR><BR><p align='left'><A:ACTIVE>!help <N>- mostra as informações do jogo<BR><A:ACTIVE>!q <N>- abre a caixa de perguntas<BR><A:ACTIVE>!skip <N>- pula a vez do mestre<BR>"
 		ui.addTextArea(id["fundo_help"], " ", playerName, 112, 50, 575, 320, nil, nil, 1.0, true)
   	ui.addTextArea(id["help_label"], "<font size='12'>" .. help .. "</a></p>", playerName, 140, 60, 530, 300, 0xf, 0xf, 2, true)
   	ui.addTextArea(id["botao_fechar"], "<a href='event:callbackClose'><p align='center'><font size='20'>" .. "Fechar" .. "</a></p>", playerName, 359, 330, 80, 30, nil, nil, 1f, true)
   
-  	tfm.exec.addImage("1651b3019c0.png", "&19", 390, 65, playerName)
-  	--ui.addTextArea(id["br"], "<a href='event:callbackBr'><font size='10'>".."bra".."</a></p>", playerName, 390, 65, 15, 8, nil, nil, 1f, true)
-  	tfm.exec.addImage("1651b30da90.png", "&2", 415, 65, playerName)
-  	tfm.exec.addImage("1651b309222.png", "&2", 440, 65, playerName)
-  	tfm.exec.addImage("1651b30c284.png", "&2", 465, 65, playerName)
+  	--IMAGENS DAS BANDEIRAS:
+  	--tfm.exec.addImage("1651b3019c0.png", "&19", 390, 65, playerName)
+  	--tfm.exec.addImage("1651b30da90.png", "&2", 415, 65, playerName)
+  	--tfm.exec.addImage("1651b309222.png", "&2", 440, 65, playerName)
+  	--tfm.exec.addImage("1651b30c284.png", "&2", 465, 65, playerName)
 
   end
 
@@ -238,7 +239,6 @@ function eventPopupAnswer(popupId, playerName, answer)
   	questionPlayer = answer
   	ui.addTextArea(id["resposta_true"], "<p align='center'><a href='event:callbackTrue'>"..text.true_answer.."</a></p>", mestre, 142, 200, 80, 20, nil, nil, 1f)
   	ui.addTextArea(id["resposta_false"], "<p align='center'><a href='event:callbackFalse'>"..text.false_answer.."</a></p>", mestre, 593, 200, 50, 20, nil, nil, 1f)
-    ui.removeTextArea(id["one_player_label"]) 
   end
 end
 
