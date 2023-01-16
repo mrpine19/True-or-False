@@ -112,7 +112,18 @@
 	  	onePlayer = false
 	  	tfm.exec.newGame("@7917347")
 	  end
+	  novoJogador(nomeDoJogador)
 	end
+
+	function novoJogador(player)
+		tfm.exec.addImage("1845194669a.png", "?1", 0, 20)
+	  tfm.exec.addPhysicObject(id["piso_gelo"], 400, 120, pisoGelo)
+		tfm.exec.addPhysicObject(id["piso_verdadeiro"], 182, 275, pisoTrue)
+		tfm.exec.addPhysicObject(id["piso_falso"], 618, 275, pisoFalse)
+		tfm.exec.addPhysicObject(id["parede1"], 20, 200, pisoParede)
+		tfm.exec.addPhysicObject(id["parede2"], 780, 200, pisoParede)
+	end
+
 
 	for name,player in next,tfm.get.room.playerList do
 		eventNewPlayer(name)
