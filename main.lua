@@ -207,14 +207,14 @@ id["boasvindas_label"] = 29
 ---------------------------------------------FUNCTIONS SOBRE A ENTRADA E SAIDA DE JOGADORES------------------------------------------------------------
 
 function translate(player, key)
-	comunidade = tfm.get.room.playerList[player].community
-	ui.addTextArea(44, "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."a comunidade do jogador "..player.." é: "..comunidade.. "</font></font></p>", player, 20, 100, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+	local community = tfm.get.room.playerList[player].community
+	--ui.addTextArea(44, "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."a comunidade do jogador "..player.." é: "..comunidade.. "</font></font></p>", player, 20, 100, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 	
 	if(player == "Homerra#0251") then
-		return lang.es[key]
+		return lang.br[key]
 	end
 
-	return lang[comunidade][key]
+	return lang[community][key]
 end
 
 function numeroDeJogadores() -- pega a quantidade de jogadores da sala
