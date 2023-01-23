@@ -23,6 +23,7 @@ local mestreSkip = false
 local mestreOut = false
 local temVencedor = false
 local onePlayer = false
+local helpMenuOpen = false
 
 
 local resposta = nil
@@ -46,6 +47,7 @@ lang.br = {
 	actual_shaman = "Shaman: ",
 	waiting_question1 = "Aguarde enquanto ",
 	waiting_question2 = " faz a pergunta",
+	your_question = "Sua pergunta: ",
 	next_round = " Próxima rodada em ",
 	seconds = " segundos",
 	everybody_died = "Todos morreram!",
@@ -81,6 +83,7 @@ lang.en = {
 	actual_shaman = "Shaman: ",
 	waiting_question1 = "Wait while ",
 	waiting_question2 = " is doing the question",
+	your_question = "Your question: ",
 	next_round = " Next round in ",
 	seconds = " seconds",
 	everybody_died = "Everybody died!",
@@ -116,6 +119,7 @@ lang.fr = {
 	actual_shaman = "Chamane: ",
 	waiting_question1 = "Attendez pendant que ",
 	waiting_question2 = " pose la question",
+	your_question = "Ta question ",
 	next_round = " Prochain tour dans ",
 	seconds = " secondes",
 	everybody_died = "Tout le monde est mort!",
@@ -151,6 +155,7 @@ lang.es = {
 	actual_shaman = "Chamán: ",
 	waiting_question1 = "Espera mientras ",
 	waiting_question2 = " esta haciendo la pregunta",
+	your_question = "Su pregunta: ",
 	next_round = " Próxima ronda en ",
 	seconds = " segundos",
 	everybody_died = "¡Todos murieron!",
@@ -217,17 +222,16 @@ id["boasvindas_label"] = 29
 
 function translate(player, key)
 	local community = tfm.get.room.playerList[player].community
-	--ui.addTextArea(44, "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" .."a comunidade do jogador "..player.." é: "..numeroDeJogadores().. "</font></font></p>", player, 20, 100, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 	
-	if(player == "Homerra#0251") then
-		return lang.fr[key]
+	if community ~= "pt" then
+		return lang.br[key]
 	end
 	if community ~= "en" and community ~= "br" and community ~= "fr" and community ~= "es" then
 		return lang.en[key]
 	end
 
 	--return lang[community][key]
-	return lang.br[key]
+	return lang.bt[key]
 end
 
 function numeroDeJogadores() -- pega a quantidade de jogadores da sala
@@ -397,45 +401,50 @@ function eventTextAreaCallback(textAreaId, playerName, callback)
   end	
 
   if callback == "callbackHelp" then
-  	ui.addTextArea(id["help_label"], "<font size='12'>" ..translate(playerName, "credit_help").. "</a></p>", playerName, 140, 100, 530, 250, 0xf, 0xf, 2, true)
+  	helpMenuOpen = true
   	ui.addTextArea(id["fundo_help"], " ", playerName, 112, 50, 575, 320, nil, nil, 1.0, true)
   	ui.addTextArea(id["botao_fechar"], "<a href='event:callbackClose'><p align='center'><font size='20'>" ..translate(playerName, "close").. "</a></p>", playerName, 359, 330, 80, 30, nil, nil, 1f, true)
   	ui.addTextArea(id["botao_creditos"], "<font size='12'><p align='center'><a href='event:callbackCreditos'>"..translate(playerName, "credit").."</font></a></p>", playerName, 132, 60, 85, 20, nil, nil, 1f, true)
   	ui.addTextArea(id["botao_intrucoes"], "<font size='12'><p align='center'><a href='event:callbackInstrucoes'>"..translate(playerName, "instructions").."</font></a></p>", playerName, 276, 60, 85, 20, nil, nil, 1f, true)
   	ui.addTextArea(id["botao_informacoes"], "<font size='12'><p align='center'><a href='event:callbackInformacoes'>"..translate(playerName, "information").."</font></a></p>", playerName, 420, 60, 85, 20, nil, nil, 1f, true)
   	ui.addTextArea(id["botao_comandos"], "<font size='12'><p align='center'><a href='event:callbackComandos'>"..translate(playerName, "commands").."</font></a></p>", playerName, 564, 60, 85, 20, nil, nil, 1f, true)
+  	ui.addTextArea(id["help_label"], "<font size='12'>" ..translate(playerName, "credit_help").. "</a></p>", playerName, 140, 100, 530, 230, 0xf, 0xf, 2, true)
   end
 
   if callback == "callbackClose" then
-  	ui.removeTextArea(id["fundo_help"])
-  	ui.removeTextArea(id["help_label"])
-  	ui.removeTextArea(id["botao_fechar"])
-  	ui.removeTextArea(id["botao_creditos"])
-  	ui.removeTextArea(id["botao_intrucoes"])
-  	ui.removeTextArea(id["botao_informacoes"])
-  	ui.removeTextArea(id["botao_comandos"])
+  	helpMenuOpen = false
+  	ui.removeTextArea(id["fundo_help"], playerName)
+  	ui.removeTextArea(id["help_label"], playerName)
+  	ui.removeTextArea(id["botao_fechar"], playerName)
+  	ui.removeTextArea(id["botao_creditos"], playerName)
+  	ui.removeTextArea(id["botao_intrucoes"], playerName)
+  	ui.removeTextArea(id["botao_informacoes"], playerName)
+  	ui.removeTextArea(id["botao_comandos"], playerName)
   end
 
   if callback == "callbackCreditos" then
-  	ui.addTextArea(id["help_label"], "<font size='12'>" ..translate(playerName, "credit_help").. "</a></p>", playerName, 140, 100, 520, 250, 0xf, 0xf, 2, true)
+  	ui.addTextArea(id["help_label"], "<font size='12'>" ..translate(playerName, "credit_help").. "</a></p>", playerName, 140, 100, 520, 230, 0xf, 0xf, 2, true)
   end
   if callback == "callbackInstrucoes" then
-		ui.addTextArea(id["help_label"], "<font size='12'>" ..translate(playerName, "instructions_help").. "</a></p>", playerName, 140, 100, 520, 250, 0xf, 0xf, 2, true)
+		ui.addTextArea(id["help_label"], "<font size='12'>" ..translate(playerName, "instructions_help").. "</a></p>", playerName, 140, 100, 520, 230, 0xf, 0xf, 2, true)
   end
   if callback == "callbackInformacoes" then
-  	ui.addTextArea(id["help_label"], "<font size='12'>" ..translate(playerName, "information_help").. "</a></p>", playerName, 140, 100, 520, 250, 0xf, 0xf, 2, true)
+  	ui.addTextArea(id["help_label"], "<font size='12'>" ..translate(playerName, "information_help").. "</a></p>", playerName, 140, 100, 520, 230, 0xf, 0xf, 2, true)
   end
   if callback == "callbackComandos" then
-  	ui.addTextArea(id["help_label"], "<font size='12'>" ..translate(playerName, "commands_help").. "</a></p>", playerName, 140, 100, 520, 250, 0xf, 0xf, 2, true)
+  	ui.addTextArea(id["help_label"], "<font size='12'>" ..translate(playerName, "commands_help").. "</a></p>", playerName, 140, 100, 520, 230, 0xf, 0xf, 2, true)
   end
 end
 
-function eventPopupAnswer(popupId, playerName, answer)
+function eventPopupAnswer(popupId, playerName, answerPopUp)
   if popupId==id["ask_word_popup"] and mestre==playerName and not perguntaFeita then
   	--criar cenário pós pergunta ser enviada
-  	questionPlayer = answer
-  	ui.addTextArea(id["resposta_true"], "<p align='center'><a href='event:callbackTrue'>"..translate(mestre, "true_choice").."</a></p>", mestre, 142, 200, 80, 20, nil, nil, 1f)
-  	ui.addTextArea(id["resposta_false"], "<p align='center'><a href='event:callbackFalse'>"..translate(mestre, "false_choice").."</a></p>", mestre, 593, 200, 50, 20, nil, nil, 1f)
+  	if answerPopUp ~= "" then
+  		tfm.exec.chatMessage("<VP>"..translate(playerName, "your_question")..answerPopUp,playerName)
+	  	questionPlayer = answerPopUp
+	  	ui.addTextArea(id["resposta_true"], "<p align='center'><a href='event:callbackTrue'>"..translate(mestre, "true_choice").."</a></p>", mestre, 142, 200, 80, 20, nil, nil, 1f)
+	  	ui.addTextArea(id["resposta_false"], "<p align='center'><a href='event:callbackFalse'>"..translate(mestre, "false_choice").."</a></p>", mestre, 593, 200, 50, 20, nil, nil, 1f)
+  	end
   end
 end
 
@@ -443,7 +452,7 @@ end
 function eventLoop(tempoAtual, tempoRestante)
 	ui.setMapName("<N><J>"..lang.br.map_name.." <N>   "..lang.br.live_mices.." <V>"..num_de_jogadores_vivos.."</V> / <J>"..(qtd_de_jogadores-1).." <BL>|<N> "..lang.br.current_round.."<V>"..rodada.." | <VP><b>"..lang.br.actual_shaman.."</b><N><ROSE>"..mestre.."<BL><")
 
-	if math.floor(tempoRestante/1000) == 0 and perguntaFeita and not intervalo then
+	if tempoRestante < 500 and perguntaFeita and not intervalo then
 		for name,player in next,tfm.get.room.playerList do
 			if tfm.get.room.playerList[name].y >= 0 and tfm.get.room.playerList[name].y <= 200 then
 				tfm.exec.killPlayer(name)
@@ -466,7 +475,7 @@ function eventLoop(tempoAtual, tempoRestante)
 			end
 		end
 		intervalo = true
-		morte(resposta, math.random(1, 6))
+		morte(resposta, 7)
 	end
 
 	if tempoRestante < 1 and intervalo then
@@ -573,6 +582,13 @@ function morte(condicao, numero)
 			end
 			tfm.exec.addPhysicObject(id["piso_falso"], 618, 275, pisoAgua)
 		end
+		if numero == 7 then
+			for name,player in next,tfm.get.room.playerList do
+				if tfm.get.room.playerList[name].x >= 470 and tfm.get.room.playerList[name].x <= 800 then
+					tfm.exec.setPlayerGravityScale(name, -1)
+				end
+			end
+		end
 
 		for name,player in next,tfm.get.room.playerList do
 			tfm.exec.chatMessage("<VP>"..translate(name, "true_answer"),name)
@@ -607,6 +623,13 @@ function morte(condicao, numero)
 				end
 			end
 			tfm.exec.addPhysicObject(id["piso_verdadeiro"], 180, 275, pisoAgua)
+		end
+		if numero == 7 then
+			for name,player in next,tfm.get.room.playerList do
+				if tfm.get.room.playerList[name].x >= 0 and tfm.get.room.playerList[name].x <= 330 then
+					tfm.exec.setPlayerGravityScale(name, -1)
+				end
+			end
 		end
 
 		for name,player in next,tfm.get.room.playerList do
@@ -647,7 +670,11 @@ function eventChatCommand(playerName, message)
 		eventTextAreaCallback(0, mestre, "callbackAskWord")
 	end
 	if message == "help" then
-		eventTextAreaCallback(0, playerName, "callbackHelp")
+		if not helpMenuOpen then
+			eventTextAreaCallback(0, playerName, "callbackHelp")
+		else
+			eventTextAreaCallback(0, playerName, "callbackClose")
+		end
 	end
 end
 
