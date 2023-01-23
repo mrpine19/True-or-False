@@ -5,33 +5,33 @@ tfm.exec.disableAutoScore(true)
 tfm.exec.disableAutoTimeLeft(true)
 
 -------------------------------------------------------------DEFINIÇÃO DAS VARIAVEIS------------------------------------------------------------
-local mestre = nil -- quem vai ser o perguntador. como é randomico, começa nulo
-local antigoMestre = ""
+local shaman = nil -- quem vai ser o perguntador. como é randomico, começa nulo
+local oldshaman = nil
 local players = {} -- armazena a quantidade de jogadores da sala
 local lang = {} -- armazena as mensagens do jogo
 local id = {}
-local vencedor = nil
+local winner = nil
 
 
-local perguntaFeita = false
-local intervalo = false
-local necessarioResetar = false
-local fimDoTempo = false
+local questionAsked = false
+local intermission = false
+local necessaryReset = false
+local isTimeOut = false
 local hasLost = false
 local hasToReset = false
-local mestreSkip = false
-local mestreOut = false
-local temVencedor = false
+local shamanSkip = false
+local shamanOut = false
+local hasWinner = false
 local onePlayer = false
 local helpMenuOpen = false
 
 
-local resposta = nil
+local answer = nil
 local timerReset = 0
-local num_de_jogadores_vivos = 0
-local qtd_de_jogadores = 0
-local rodada = 0
-local pontuacao = 0
+local numberOfPlayersLive = 0
+local amountOfLivePlayers = 0
+local round = 0
+local punctuation = 0
 
 lang.br = {
 
@@ -53,15 +53,15 @@ lang.br = {
 	everybody_died = "Todos morreram!",
 	winner = "O vencedor é ",
 	no_time = "Tempo esgotado!",
-	mestre_out = "O shaman abandonou a partida!",
-	mestre_skip = " pulou a sua vez!",
+	shaman_out = "O shaman abandonou a partida!",
+	shaman_skip = " pulou a sua vez!",
 	close = "Fechar",
 	credit = "Créditos",
 	instructions = "Instruções",
 	information = "Informações", 
 	commands = "Comandos",
 	credit_help = "<p align='center'><CE>Créditos<BR><BR><p align='left'><CH>Desenvolvedor: <N>Homerre#0000<BR><p align='left'><CH>Ideia, traduções, layout: <N>Fake_da_annyxd#7479<BR><BR><BR><p align='center'><CE>Agradecimentos<BR><BR><p align='left'><VP>Apoio técnico: <N>Infectsoul#2048, Sklag#2552<BR><p align='left'><VP>Agradecimentos especiais: <N>Fuyunohanashi#5024, Phypoy#0010",
-	instructions_help = "<p align='center'><CE>Instruções do jogo <BR><BR><p align='LEFT'><N>Para o jogo começar, o shaman é escolhido de forma aleatória. <BR>O jogador que for escolhido como shaman terá o poder de fazer uma pergunta clicando no botão “Clique aqui para fazer uma pergunta”. <BR>Depois de clicar, uma caixa de texto para o shaman fazer uma pergunta será aberta, em que o shaman deverá escolher se a resposta para a pergunta feita é verdadeira ou falsa. Para fazer essa escolha, basta clicar nos botões “verdadeiro” ou “falso”. <BR>Em seguida, os jogadores terão 10 segundos para decidir se a resposta é verdadeira ou falsa. Quem ficar indeciso e não escolher nenhum lado, morrerá depois desses 10 segundos. <BR>O vencedor será o último sobrevivente e se tornará o próximo shaman. <BR>Se ninguém sobreviver, o próximo shaman será escolhido aleatoriamente.",
+	instructions_help = "<p align='center'><CE>Instruções do jogo <BR><BR><p align='LEFT'><N>Para o jogo começar, o shaman é escolhido de forma aleatória. <BR>O jogador que for escolhido como shaman terá o poder de fazer uma pergunta clicando no botão “Clique aqui para fazer uma pergunta”. <BR>Depois de clicar, uma caixa de texto para o shaman fazer uma pergunta será aberta, em que o shaman deverá escolher se a resposta para a pergunta feita é verdadeira ou falsa. Para fazer essa escolha, basta clicar nos botões “verdadeiro” ou “falso”. <BR>Em seguida, os jogadores terão 10 segundos para decidir se a resposta é verdadeira ou falsa. Quem ficar indeciso e não escolher nenhum lado, morrerá depois desses 10 segundos. <BR>O winner será o último sobrevivente e se tornará o próximo shaman. <BR>Se ninguém sobreviver, o próximo shaman será escolhido aleatoriamente.",
 	information_help = "<p align='center'><CE>Informações do jogo <BR><BR><p align='LEFT'><N>O tempo para fazer uma pergunta, inicialmente, será de 60 segundos. Porém, quando se passar 10 rodadas, o tempo diminuíra para 45 segundos, e depois de 20 rodadas, caíra para 30 segundos. Portanto, seja rápido para fazer suas perguntas! <BR><BR>Os jogadores terão 10 segundos para decidir se a resposta da pergunta é verdadeiro ou falso. Se não escolher, será considerado que você perdeu a rodada <BR><BR>Cada resposta certa fará que o jogador ganhe um ponto. O próximo shaman será o último sobrevivente, ou seja, o jogador que fez mais pontos! <BR><BR>Evite fazer perguntas de opinião e que não sejam possíveis de responder com verdadeiro ou falso ",
 	commands_help = "<p align='center'><CE>Comandos<BR><BR><p align='left'><A:ACTIVE>!help <N>- mostra as informações do jogo<BR><A:ACTIVE>!q <N>- abre a caixa de perguntas<BR><A:ACTIVE>!skip <N>- pula a vez do shaman",
 	true_answer = "A resposta é verdadeira!",
@@ -89,8 +89,8 @@ lang.en = {
 	everybody_died = "Everybody died!",
 	winner = "The winner is ",
 	no_time = "Time’s up!",
-	mestre_out = "The shaman left the game!",
-	mestre_skip = " skipped his turn!",
+	shaman_out = "The shaman left the game!",
+	shaman_skip = " skipped his turn!",
 	close = "Close",
 	credit = "Credits",
 	instructions = "Instructions",
@@ -125,8 +125,8 @@ lang.fr = {
 	everybody_died = "Tout le monde est mort!",
 	winner = "Le gagnant est ",
 	no_time = "Le temps est écoulé.",
-	mestre_out = "Le chaman a abandonné le jeu!",
-	mestre_skip = " sauté à votre tour!",
+	shaman_out = "Le chaman a abandonné le jeu!",
+	shaman_skip = " sauté à votre tour!",
 	close = "Fermer",
 	credit ="Crédits",
 	instructions = "Instructions",
@@ -161,8 +161,8 @@ lang.es = {
 	everybody_died = "¡Todos murieron!",
 	winner = "El ganador es ",
 	no_time = "¡Tiempo agotado!",
-	mestre_out = "¡El chamán abandonó el juego!",
-	mestre_skip = " saltó su turno!",
+	shaman_out = "¡El chamán abandonó el juego!",
+	shaman_skip = " saltó su turno!",
 	close = "Cierra",
 	credit = "Creditos",
 	instructions = "Instrucciones",
@@ -177,48 +177,41 @@ lang.es = {
 
 }
 
---local pisoTrue = {type = 12,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0x008000',miceCollision = true,groundCollision = true,dynamic = false}
---local pisoFalse = {type = 12,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0x8B0000',miceCollision = true,groundCollision = true,dynamic = false}
-local pisoResposta = {type = 10,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = 0,miceCollision = true,groundCollision = true,dynamic = false}
-local pisoBloqueio = {type = 10,width = 152,height = 10,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = 0,miceCollision = true,groundCollision = true,dynamic = false}
-local pisoParede = {type = 10,width = 40,height = 400,foregound = 1,friction = 0,restitution = 0.0,angle = 0,color = 0,miceCollision = true,groundCollision = true,dynamic = false}
-local pisoTransparente = {type = 8,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0x00FF7F',miceCollision = true,groundCollision = true,dynamic = false}
+local floorAnswer = {type = 10,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = 0,miceCollision = true,groundCollision = true,dynamic = false}
+local floorTemporary = {type = 10,width = 152,height = 10,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = 0,miceCollision = true,groundCollision = true,dynamic = false}
+local floorWall = {type = 10,width = 40,height = 400,foregound = 1,friction = 0,restitution = 0.0,angle = 0,color = 0,miceCollision = true,groundCollision = true,dynamic = false}
+local floorTransparent = {type = 8,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0x00FF7F',miceCollision = true,groundCollision = true,dynamic = false}
 local pisoAcido = {type = 19,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0x00FF7F',miceCollision = true,groundCollision = true,dynamic = false}
 local pisoAgua = {type = 9,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0x00FF7F',miceCollision = false,groundCollision = true,dynamic = false}
-local pisoFalso = {type = 10,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0x00FF7F',miceCollision = true,groundCollision = true,dynamic = true}
+local floorFake = {type = 10,width = 285,height = 30,foregound = 1,friction = 1.0,restitution = 0.0,angle = 0,color = '0x00FF7F',miceCollision = true,groundCollision = true,dynamic = true}
 
 
-id["label_question_button"] = 1
-id["one_player_label"] = 2
+id["question_button_label"] = 1
+id["waiting_question"] = 2
 id["turn_label1"] = 3
 id["turn_label2"] = 4
 id["ask_word_popup"] = 5
 id["question_label"] = 6
-id["resposta_true"] = 7
-id["resposta_false"] = 8
-id["piso_verdadeiro"] = 9
-id["piso_falso"] = 10
-id["piso_gelo"] = 11
-id["question_reset"] = 12
-id["jogo_vencido"] = 13
-id["parede1"] = 14
-id["parede2"] = 15
-id["botao_help"] = 16
-id["help_label"] = 17
-id["botao_fechar"] = 18
-id["fundo_help"] = 19
-id["br"] = 20
-id["uk"] = 21
-id["es"] = 22
-id["fr"] = 23
-id["time"] = 24
-id["botao_creditos"] = 25
-id["botao_intrucoes"] = 26
-id["botao_informacoes"] = 27
-id["botao_comandos"] = 28
-id["boasvindas_label"] = 29
+id["true_answer_floor"] = 7
+id["false_answer_floor"] = 8
+id["true_floor_answer"] = 9
+id["false_floor_answer"] = 10
+id["floor_temporary"] = 11
+id["question_reset_label"] = 12
+id["wall1"] = 13
+id["wall2"] = 1
+id["help_button"] = 15
+id["help_label"] = 16
+id["close_button"] = 17
+id["background_help"] = 18
+id["time"] = 19
+id["credits_button"] = 20
+id["instructions_button"] = 21
+id["information_button"] = 22
+id["commands_button"] = 23
+id["welcome_button"] = 24
 
----------------------------------------------FUNCTIONS SOBRE A ENTRADA E SAIDA DE JOGADORES------------------------------------------------------------
+---------------------------------------------TRANSLATION FUNCTION------------------------------------------------------------
 
 function translate(player, key)
 	local community = tfm.get.room.playerList[player].community
@@ -234,23 +227,23 @@ function translate(player, key)
 	return lang.bt[key]
 end
 
-function numeroDeJogadores() -- pega a quantidade de jogadores da sala
-	return qtd_de_jogadores 
+---------------------------------------------GENERAL FUNCTIONS------------------------------------------------------------
+function numberPlayers() 
+	return amountOfLivePlayers 
 end
 
 function eventPlayerDied(name)
-	num_de_jogadores_vivos = num_de_jogadores_vivos - 1
+	numberOfPlayersLive = numberOfPlayersLive - 1
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function eventNewPlayer(nomeDoJogador)
-  qtd_de_jogadores = qtd_de_jogadores + 1
-  if numeroDeJogadores() == 2 then
+function eventNewPlayer(playerName)
+  amountOfLivePlayers = amountOfLivePlayers + 1
+  if numberPlayers() == 3 then
   	onePlayer = false
   	tfm.exec.newGame("@7917347")
   end
 
   tfm.exec.addImage("185c708dd6f.jpg", "?1", 0, 20)
-  ui.addTextArea(id["boasvindas_label"], "<font size='20'>"..translate(nomeDoJogador, "welcome").."</font></p>", nomeDoJogador, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+  ui.addTextArea(id["welcome_button"], "<font size='20'><p align='center'>"..translate(playerName, "welcome").."</font></p>", playerName, 20, 310, 750, 100, 0xC0C0C0, 0xC0C0C0, 0f)
 end
 
 for name,player in next,tfm.get.room.playerList do
@@ -258,168 +251,164 @@ for name,player in next,tfm.get.room.playerList do
 end
 
 function eventPlayerLeft(name)
-	qtd_de_jogadores = qtd_de_jogadores - 1
-	if name == mestre then
-		mestreOut = true
+	amountOfLivePlayers = amountOfLivePlayers - 1
+	if name == shaman then
+		shamanOut = true
 		reset()
 	end
-	if numeroDeJogadores() == 1 then
+	if numberPlayers() == 1 then
 		reset()
 	end
 end
---------------------------------------------------------FUNCTION PARA DEFINIR O MESTRE------------------------------------------------------------
 function randomPlayer()
 	return players[math.random(1,#players)]
 end
---------------------------------------------------------------função que dá as configurações iniciais do jogo------------------------------------------------------------
+
+--------------------------------------------------------------FUNCTION THAT GIVES THE INITIAL GAME SETTINGS------------------------------------------------------------
 function eventNewGame()
-	--perguntaFeita = false
-	num_de_jogadores_vivos = 0
+	numberOfPlayersLive = 0
 	for name,player in next,tfm.get.room.playerList do
-		num_de_jogadores_vivos=num_de_jogadores_vivos+1
+		numberOfPlayersLive=numberOfPlayersLive+1
 	end
 
 	updatePlayersList()
-	tfm.exec.addImage("174042eda4f.png", "%Fake_da_annyxd#7479", -21, -30)
 	tfm.exec.addImage("185c708dd6f.jpg", "?1", 0, 20)
 
-	if numeroDeJogadores() >= 2 and not temVencedor then --MUDAR PARA 2 DEPOIS QUE TERMINAR TUDO
-		antigoMestre = mestre
-		while(antigoMestre == mestre) do
-			mestre = randomPlayer()
+	if numberPlayers() >= 2 and not hasWinner then 
+		oldshaman = shaman
+		while(oldshaman == shaman) do
+			shaman = randomPlayer()
 		end
-		tfm.exec.killPlayer(mestre)
+		tfm.exec.killPlayer(shaman)
 	end
 
-	if numeroDeJogadores() >= 2 and temVencedor then
-		mestre = vencedor
-		temVencedor = false
-		tfm.exec.killPlayer(mestre)
+	if numberPlayers() >= 2 and hasWinner then
+		shaman = winner
+		hasWinner = false
+		tfm.exec.killPlayer(shaman)
 	end
 
 
-	novaPergunta()
+	newQuestion()
 
-	ui.addTextArea(id["botao_help"], "<font size='18'><p align='center'><a href='event:callbackHelp'>".."?".."</font></a></p>", nil, 720, 35, 20, 25, nil, nil, 1f)
+	ui.addTextArea(id["help_button"], "<font size='18'><p align='center'><a href='event:callbackHelp'>".."?".."</font></a></p>", nil, 720, 35, 20, 25, nil, nil, 1f)
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------CRIAÇÃO DO CENÁRIO DA PERGUNTA------------------------------------------------------------
-function novaPergunta()
-	ui.removeTextArea(id["boasvindas_label"])
-	perguntaFeita = false
-	intervalo = false
 
-	if numeroDeJogadores() >= 2 then 
+------------------------------------------------CREATING A NEW QUESTION------------------------------------------------------------
+function newQuestion()
+	ui.removeTextArea(id["welcome_button"])
+	questionAsked = false
+	intermission = false
+
+	if numberPlayers() >= 2 then 
 		ui.removeTextArea(id["question_label"])
 
 		for name,player in next,tfm.get.room.playerList do
 			tfm.exec.movePlayer(name,400,60,false)
 			if not tfm.get.room.playerList[name].isDead then
-  			tfm.exec.setPlayerScore(name, pontuacao, false)
+  			tfm.exec.setPlayerScore(name, punctuation, false)
 			end
 
-			if (name~=mestre) then
-				ui.removeTextArea(id["label_question_button"])
+			if (name~=shaman) then
+				ui.removeTextArea(id["question_button_label"])
   		end
-  		ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name,"waiting_question1")..mestre..translate(name,"waiting_question2").. "</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+  		ui.addTextArea(id["waiting_question"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name,"waiting_question1")..shaman..translate(name,"waiting_question2").. "</font></font></p>", name, 20, 320, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 		end
 
 		timer = 0
-		rodada = rodada + 1
-		pontuacao = pontuacao + 1
+		round = round + 1
+		punctuation = punctuation + 1
 
-		if rodada <= 10 then
+		if round <= 10 then
 			tfm.exec.setGameTime(60)
-		elseif rodada > 10 and rodada <=20 then
+		elseif round > 10 and round <=20 then
 			tfm.exec.setGameTime(45)
-		elseif rodada > 20 then
+		elseif round > 20 then
 			tfm.exec.setGameTime(30)
 		end
 		
-		resposta = nil
-		fazerPergunta()
+		answer = nil
+		askQuestion()
 	else
 		onePlayer = true
 		ui.addTextArea(id["time"],"<p align='center'><font size='45'>".."?".."",nil,360,213,80,60,0x000001,0x494949,1.0)
 		for name,player in next,tfm.get.room.playerList do	
-			ui.addTextArea(id["one_player_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "more_players").. "</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)	
+			ui.addTextArea(id["waiting_question"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "more_players").. "</font></font></p>", name, 20, 320, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)	
 		end
 	end
 
-	tfm.exec.addPhysicObject(id["piso_gelo"], 400, 120, pisoBloqueio)
-	tfm.exec.addPhysicObject(id["piso_verdadeiro"], 182, 275, pisoResposta)
-	tfm.exec.addPhysicObject(id["piso_falso"], 618, 275, pisoResposta)
-	tfm.exec.addPhysicObject(id["parede1"], 20, 200, pisoParede)
-	tfm.exec.addPhysicObject(id["parede2"], 780, 200, pisoParede)
+	tfm.exec.addPhysicObject(id["floor_temporary"], 400, 120, floorTemporary)
+	tfm.exec.addPhysicObject(id["true_floor_answer"], 182, 275, floorAnswer)
+	tfm.exec.addPhysicObject(id["false_floor_answer"], 618, 275, floorAnswer)
+	tfm.exec.addPhysicObject(id["wall1"], 20, 200, floorWall)
+	tfm.exec.addPhysicObject(id["wall2"], 780, 200, floorWall)
 end
---------------------------------------------------------------ATUALIZA A LISTA DE JOGADORES DA SALA------------------------------------------------------------
+------------------------------------------------FUNCTION THAT UPDATES THE LIST OF PLAYERS IN THE ROOM------------------------------------------------------------
 function updatePlayersList()
   for p,_ in pairs(tfm.get.room.playerList) do
   	table.insert(players, p)
   end
 end
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
----------------------------------------------------------------------BOTÃO PERGUNTA-----------------------------------------------------------------------------------------------------------------
-function fazerPergunta()
-	if not perguntaFeita and numeroDeJogadores() > 1 then
+---------------------------------------------------------------------QUESTION BUTTON-----------------------------------------------------------------------------------------------------------------
+function askQuestion()
+	if not questionAsked and numberPlayers() > 1 then
 		for name,player in next,tfm.get.room.playerList do
-			ui.addTextArea(id["label_question_button"], "<p align='center'><a href='event:callbackAskWord'><font size='11'>"..translate(mestre, "question_button").."</a></p>", mestre, 295, 150, 210, 20, nil, nil, 1f) --BOTÃO PERGUNTA
+			ui.addTextArea(id["question_button_label"], "<p align='center'><a href='event:callbackAskWord'><font size='11'>"..translate(shaman, "question_button").."</a></p>", shaman, 295, 150, 210, 20, nil, nil, 1f)
   	end
   end
 end
 
------------------------------------------------------QUANDO O MESTRE DECIDE SE É TRUE OR FALSE------------------------------------------------------------
+-----------------------------------------------------WHEN THE SHAMAN DECIDES IF THE QUESTION IS TRUE OR FALSE------------------------------------------------------------
 function eventTextAreaCallback(textAreaId, playerName, callback)
-  if callback=="callbackAskWord" and playerName==mestre then
-  	--addPopup(Int id, Int type, String text, String targetPlayer, Int x, Int y, Int width, Boolean fixedPos (false))
-    ui.addPopup(id["ask_word_popup"], 2, translate(mestre, "question"), mestre, 300, 120, 200) 
+  if callback=="callbackAskWord" and playerName==shaman then
+    ui.addPopup(id["ask_word_popup"], 2, translate(shaman, "question"), shaman, 300, 120, 200) 
   end
 
   if callback == "callbackTrue" then
-  	ui.removeTextArea(id["one_player_label"]) 
+  	ui.removeTextArea(id["waiting_question"]) 
   	tfm.exec.setGameTime(10)
-  	tfm.exec.removePhysicObject(id["piso_gelo"])
+  	tfm.exec.removePhysicObject(id["floor_temporary"])
    	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 40, 300, 720, 100, 0xC0C0C0, 0xC0C0C0, 0f)
- 	 	ui.removeTextArea(id["label_question_button"])
- 	 	ui.removeTextArea(id["resposta_true"])
-  	ui.removeTextArea(id["resposta_false"])
-  	perguntaFeita = true
-  	resposta = true
+ 	 	ui.removeTextArea(id["question_button_label"])
+ 	 	ui.removeTextArea(id["true_answer_floor"])
+  	ui.removeTextArea(id["false_answer_floor"])
+  	questionAsked = true
+  	answer = true
   end	
 
   if callback == "callbackFalse" then
-  	ui.removeTextArea(id["one_player_label"]) 
+  	ui.removeTextArea(id["waiting_question"]) 
   	tfm.exec.setGameTime(10)
-  	tfm.exec.removePhysicObject(id["piso_gelo"])
+  	tfm.exec.removePhysicObject(id["floor_temporary"])
   	ui.addTextArea(id["question_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..questionPlayer.. "</font></font></p>", nil, 40, 300, 720, 100, 0xC0C0C0, 0xC0C0C0, 0f)
-  	ui.removeTextArea(id["label_question_button"])
-  	ui.removeTextArea(id["resposta_true"])
-  	ui.removeTextArea(id["resposta_false"])
-  	perguntaFeita = true
-  	resposta = false
+  	ui.removeTextArea(id["question_button_label"])
+  	ui.removeTextArea(id["true_answer_floor"])
+  	ui.removeTextArea(id["false_answer_floor"])
+  	questionAsked = true
+  	answer = false
   end	
 
   if callback == "callbackHelp" then
   	helpMenuOpen = true
-  	ui.addTextArea(id["fundo_help"], " ", playerName, 112, 50, 575, 320, nil, nil, 1.0, true)
-  	ui.addTextArea(id["botao_fechar"], "<a href='event:callbackClose'><p align='center'><font size='20'>" ..translate(playerName, "close").. "</a></p>", playerName, 359, 330, 80, 30, nil, nil, 1f, true)
-  	ui.addTextArea(id["botao_creditos"], "<font size='12'><p align='center'><a href='event:callbackCreditos'>"..translate(playerName, "credit").."</font></a></p>", playerName, 132, 60, 85, 20, nil, nil, 1f, true)
-  	ui.addTextArea(id["botao_intrucoes"], "<font size='12'><p align='center'><a href='event:callbackInstrucoes'>"..translate(playerName, "instructions").."</font></a></p>", playerName, 276, 60, 85, 20, nil, nil, 1f, true)
-  	ui.addTextArea(id["botao_informacoes"], "<font size='12'><p align='center'><a href='event:callbackInformacoes'>"..translate(playerName, "information").."</font></a></p>", playerName, 420, 60, 85, 20, nil, nil, 1f, true)
-  	ui.addTextArea(id["botao_comandos"], "<font size='12'><p align='center'><a href='event:callbackComandos'>"..translate(playerName, "commands").."</font></a></p>", playerName, 564, 60, 85, 20, nil, nil, 1f, true)
+  	ui.addTextArea(id["background_help"], " ", playerName, 112, 50, 575, 320, nil, nil, 1.0, true)
+  	ui.addTextArea(id["close_button"], "<a href='event:callbackClose'><p align='center'><font size='20'>" ..translate(playerName, "close").. "</a></p>", playerName, 359, 330, 80, 30, nil, nil, 1f, true)
+  	ui.addTextArea(id["credits_button"], "<font size='12'><p align='center'><a href='event:callbackCreditos'>"..translate(playerName, "credit").."</font></a></p>", playerName, 132, 60, 85, 20, nil, nil, 1f, true)
+  	ui.addTextArea(id["instructions_button"], "<font size='12'><p align='center'><a href='event:callbackInstrucoes'>"..translate(playerName, "instructions").."</font></a></p>", playerName, 276, 60, 85, 20, nil, nil, 1f, true)
+  	ui.addTextArea(id["information_button"], "<font size='12'><p align='center'><a href='event:callbackInformacoes'>"..translate(playerName, "information").."</font></a></p>", playerName, 420, 60, 85, 20, nil, nil, 1f, true)
+  	ui.addTextArea(id["commands_button"], "<font size='12'><p align='center'><a href='event:callbackComandos'>"..translate(playerName, "commands").."</font></a></p>", playerName, 564, 60, 85, 20, nil, nil, 1f, true)
   	ui.addTextArea(id["help_label"], "<font size='12'>" ..translate(playerName, "credit_help").. "</a></p>", playerName, 140, 100, 530, 230, 0xf, 0xf, 2, true)
   end
 
   if callback == "callbackClose" then
   	helpMenuOpen = false
-  	ui.removeTextArea(id["fundo_help"], playerName)
+  	ui.removeTextArea(id["background_help"], playerName)
   	ui.removeTextArea(id["help_label"], playerName)
-  	ui.removeTextArea(id["botao_fechar"], playerName)
-  	ui.removeTextArea(id["botao_creditos"], playerName)
-  	ui.removeTextArea(id["botao_intrucoes"], playerName)
-  	ui.removeTextArea(id["botao_informacoes"], playerName)
-  	ui.removeTextArea(id["botao_comandos"], playerName)
+  	ui.removeTextArea(id["close_button"], playerName)
+  	ui.removeTextArea(id["credits_button"], playerName)
+  	ui.removeTextArea(id["instructions_button"], playerName)
+  	ui.removeTextArea(id["information_button"], playerName)
+  	ui.removeTextArea(id["commands_button"], playerName)
   end
 
   if callback == "callbackCreditos" then
@@ -437,30 +426,30 @@ function eventTextAreaCallback(textAreaId, playerName, callback)
 end
 
 function eventPopupAnswer(popupId, playerName, answerPopUp)
-  if popupId==id["ask_word_popup"] and mestre==playerName and not perguntaFeita then
+  if popupId==id["ask_word_popup"] and shaman==playerName and not questionAsked then
   	--criar cenário pós pergunta ser enviada
   	if answerPopUp ~= "" then
   		tfm.exec.chatMessage("<VP>"..translate(playerName, "your_question")..answerPopUp,playerName)
 	  	questionPlayer = answerPopUp
-	  	ui.addTextArea(id["resposta_true"], "<p align='center'><a href='event:callbackTrue'>"..translate(mestre, "true_choice").."</a></p>", mestre, 142, 200, 80, 20, nil, nil, 1f)
-	  	ui.addTextArea(id["resposta_false"], "<p align='center'><a href='event:callbackFalse'>"..translate(mestre, "false_choice").."</a></p>", mestre, 593, 200, 50, 20, nil, nil, 1f)
+	  	ui.addTextArea(id["true_answer_floor"], "<p align='center'><a href='event:callbackTrue'>"..translate(shaman, "true_choice").."</a></p>", shaman, 142, 200, 80, 20, nil, nil, 1f)
+	  	ui.addTextArea(id["false_answer_floor"], "<p align='center'><a href='event:callbackFalse'>"..translate(shaman, "false_choice").."</a></p>", shaman, 593, 200, 50, 20, nil, nil, 1f)
   	end
   end
 end
 
-----------------------------------------------------------------------------------------------------------
-function eventLoop(tempoAtual, tempoRestante)
-	ui.setMapName("<N><J>"..lang.br.map_name.." <N>   "..lang.br.live_mices.." <V>"..num_de_jogadores_vivos.."</V> / <J>"..(qtd_de_jogadores-1).." <BL>|<N> "..lang.br.current_round.."<V>"..rodada.." | <VP><b>"..lang.br.actual_shaman.."</b><N><ROSE>"..mestre.."<BL><")
+------------------------------------------------------------GAME LOOP (OCCURS EVERY HALF SECOND)-----------------------------------
+function eventLoop(present, timeLeft)
+	ui.setMapName("<N><J>"..lang.br.map_name.." <N>   "..lang.br.live_mices.." <V>"..numberOfPlayersLive.."</V> / <J>"..(amountOfLivePlayers-1).." <BL>|<N> "..lang.br.current_round.."<V>"..round.." | <VP><b>"..lang.br.actual_shaman.."</b><N><ROSE>"..shaman.."<BL><")
 
-	if tempoRestante < 500 and perguntaFeita and not intervalo then
+	if timeLeft < 500 and questionAsked and not intermission then
 		for name,player in next,tfm.get.room.playerList do
 			if tfm.get.room.playerList[name].y >= 0 and tfm.get.room.playerList[name].y <= 200 then
 				tfm.exec.killPlayer(name)
 			end
 		end
 		tfm.exec.setGameTime(5)
-		if math.floor(tempoRestante/1000) == 1 then
-			if resposta == true then
+		if math.floor(timeLeft/1000) == 1 then
+			if answer == true then
 				for name,player in next,tfm.get.room.playerList do
 					if tfm.get.room.playerList[name].x >= 475 and tfm.get.room.playerList[name].x <= 760 then
 						tfm.exec.killPlayer(name)
@@ -474,102 +463,101 @@ function eventLoop(tempoAtual, tempoRestante)
 				end
 			end
 		end
-		intervalo = true
-		morte(resposta, 7)
+		intermission = true
+		death(answer, 2)
 	end
 
-	if tempoRestante < 1 and intervalo then
-			novaPergunta()
+	if timeLeft < 1 and intermission then
+			newQuestion()
 	end
 
-	if num_de_jogadores_vivos == 0 then
-				tfm.exec.setGameTime(5)
-				ui.removeTextArea(id["question_label"])
-				reset()
-	end
-	--FAZ PARTE PARA DEFINIR O VENCEDOR
-	if num_de_jogadores_vivos == 1 and numeroDeJogadores() > 2 and tempoRestante <= 1 then
+	if numberOfPlayersLive == 0 then
 				tfm.exec.setGameTime(5)
 				ui.removeTextArea(id["question_label"])
 				reset()
 	end
 
-	if math.floor(tempoRestante/1000) == 0 and not perguntaFeita and num_de_jogadores_vivos >= 1 and not intervalo and not temVencedor then --MUDAR A QUANTIDADE DE JOGADORES QUANDO O JOGO ESTIVER PRONTO
-    fimDoTempo = true
+	if numberOfPlayersLive == 1 and numberPlayers() > 2 and timeLeft <= 1 then
+				tfm.exec.setGameTime(5)
+				ui.removeTextArea(id["question_label"])
+				reset()
+	end
+
+	if math.floor(timeLeft/1000) == 0 and not questionAsked and numberOfPlayersLive >= 1 and not intermission and not hasWinner then --MUDAR A QUANTIDADE DE JOGADORES QUANDO O JOGO ESTIVER PRONTO
+    isTimeOut = true
     reset()
   end
 
-	if necessarioResetar == true then
-		ui.removeTextArea(id["one_player_label"])
+	if necessaryReset == true then
+		ui.removeTextArea(id["waiting_question"])
 		ui.removeTextArea(id["question_label"])
 		timerReset = timerReset + 0.5
-		if num_de_jogadores_vivos == 0 then
+		if numberOfPlayersLive == 0 then
 			for name,player in next,tfm.get.room.playerList do
-				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "everybody_died")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+				ui.addTextArea(id["question_reset_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "everybody_died")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 			end
 		end
-		--DEFININDO O VENCEDOR! FUNCIONA
-		if num_de_jogadores_vivos == 1 and numeroDeJogadores() > 2 then
+		if numberOfPlayersLive == 1 and numberPlayers() > 2 then
 				for name, player in next, tfm.get.room.playerList do
-					ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "winner")..name.."!"..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+					ui.addTextArea(id["question_reset_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "winner")..name.."!"..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 					if not tfm.get.room.playerList[name].isDead then
-						vencedor = name
-						temVencedor = true
+						winner = name
+						hasWinner = true
 					end
 				end		
 		end
-		if fimDoTempo then 
-			ui.removeTextArea(id["label_question_button"])
+		if isTimeOut then 
+			ui.removeTextArea(id["question_button_label"])
 			for name,player in next,tfm.get.room.playerList do	
-				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "no_time")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
+				ui.addTextArea(id["question_reset_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "no_time")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
 			end
 		end
-		if mestreOut then 
+		if shamanOut then 
 			for name,player in next,tfm.get.room.playerList do
-				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "mestre_out")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
+				ui.addTextArea(id["question_reset_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "shaman_out")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
 			end
 		end
-		if mestreSkip then
+		if shamanSkip then
 			for name,player in next,tfm.get.room.playerList do
-				ui.addTextArea(id["question_reset"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..mestre..translate(name, "mestre_skip")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+				ui.addTextArea(id["question_reset_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..shaman..translate(name, "shaman_skip")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 			end
 		end	
 	end
 
 	if timerReset==5 then
 		hasToReset = true
-		fimDoTempo = false
-		mestreOut = false
-		mestreSkip = false
+		isTimeOut = false
+		shamanOut = false
+		shamanSkip = false
     reset()
   end
 
-  if not intervalo and not necessarioResetar and not onePlayer and math.floor(tempoRestante/1000) > 0 then
-		ui.addTextArea(id["time"],"<p align='center'><font size='45'>"..math.floor(tempoRestante/1000).."",nil,360,213,80,60,0x000001,0x494949,1.0)
+  if not intermission and not necessaryReset and not onePlayer and math.floor(timeLeft/1000) > 0 then
+		ui.addTextArea(id["time"],"<p align='center'><font size='45'>"..math.floor(timeLeft/1000).."",nil,360,213,80,60,0x000001,0x494949,1.0)
 	end
 
  end
 
- --CRIANDO OS DIFERENTES CENÁRIOS DE MORTE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-function morte(condicao, numero)
+ ---------------------------------------------CREATING THE DIFFERENT TYPES OF DEATH ----------------------------------------------------
+function death(condicao, numero)
 
 	if condicao == true then
 		if numero == 1 then
-			tfm.exec.removePhysicObject(id["piso_falso"])
+			tfm.exec.removePhysicObject(id["false_floor_answer"])
 		end
 		if numero == 2 then
-			tfm.exec.removePhysicObject(id["piso_falso"])
-			tfm.exec.removePhysicObject(id["piso_verdadeiro"])
-			tfm.exec.addPhysicObject(id["piso_falso"], 180, 275, pisoTransparente)
+			tfm.exec.removePhysicObject(id["false_floor_answer"])
+			tfm.exec.removePhysicObject(id["true_floor_answer"])
+			tfm.exec.addPhysicObject(id["false_floor_answer"], 180, 275, floorTransparent)
 		end
 		if numero == 3 then
-			tfm.exec.addPhysicObject(id["piso_falso"], 618, 273, pisoFalso)		
+			tfm.exec.addPhysicObject(id["false_floor_answer"], 618, 273, floorFake)		
 		end	
 		if numero == 4 then
-			tfm.exec.addPhysicObject(id["piso_falso"], 618, 273, pisoAcido)		
+			tfm.exec.addPhysicObject(id["false_floor_answer"], 618, 273, pisoAcido)		
 		end	
 		if numero == 5 then
-			tfm.exec.removePhysicObject(id["parede2"])
+			tfm.exec.removePhysicObject(id["wall2"])
 			tfm.exec.addShamanObject(17, 480, 210, 90, 50, 0, false)
 			tfm.exec.addShamanObject(17, 480, 230, 90, 50, 0, false)
 			tfm.exec.addShamanObject(17, 480, 250, 90, 50, 0, false)
@@ -580,7 +568,7 @@ function morte(condicao, numero)
 					tfm.exec.giveCheese(name)
 				end
 			end
-			tfm.exec.addPhysicObject(id["piso_falso"], 618, 275, pisoAgua)
+			tfm.exec.addPhysicObject(id["false_floor_answer"], 618, 275, pisoAgua)
 		end
 		if numero == 7 then
 			for name,player in next,tfm.get.room.playerList do
@@ -597,21 +585,21 @@ function morte(condicao, numero)
 
 	if condicao == false then
 		if numero == 1 then
-			tfm.exec.removePhysicObject(id["piso_verdadeiro"])
+			tfm.exec.removePhysicObject(id["true_floor_answer"])
 		end	
 		if numero == 2 then
-			tfm.exec.removePhysicObject(id["piso_falso"])
-			tfm.exec.removePhysicObject(id["piso_verdadeiro"])
-			tfm.exec.addPhysicObject(id["piso_verdadeiro"], 618, 275, pisoTransparente)
+			tfm.exec.removePhysicObject(id["false_floor_answer"])
+			tfm.exec.removePhysicObject(id["true_floor_answer"])
+			tfm.exec.addPhysicObject(id["true_floor_answer"], 618, 275, floorTransparent)
 		end
 		if numero == 3 then
-			tfm.exec.addPhysicObject(id["piso_verdadeiro"], 180, 275, pisoFalso)		
+			tfm.exec.addPhysicObject(id["true_floor_answer"], 180, 275, floorFake)		
 		end	
 		if numero == 4 then
-			tfm.exec.addPhysicObject(id["piso_verdadeiro"], 180, 275, pisoAcido)		
+			tfm.exec.addPhysicObject(id["true_floor_answer"], 180, 275, pisoAcido)		
 		end	
 		if numero == 5 then
-			tfm.exec.removePhysicObject(id["parede1"])
+			tfm.exec.removePhysicObject(id["wall1"])
 			tfm.exec.addShamanObject(17, 315, 210, 270, 50, 0, false)
 			tfm.exec.addShamanObject(17, 315, 230, 270, 50, 0, false)
 			tfm.exec.addShamanObject(17, 315, 250, 270, 50, 0, false)
@@ -622,7 +610,7 @@ function morte(condicao, numero)
 					tfm.exec.giveCheese(name)
 				end
 			end
-			tfm.exec.addPhysicObject(id["piso_verdadeiro"], 180, 275, pisoAgua)
+			tfm.exec.addPhysicObject(id["true_floor_answer"], 180, 275, pisoAgua)
 		end
 		if numero == 7 then
 			for name,player in next,tfm.get.room.playerList do
@@ -636,38 +624,38 @@ function morte(condicao, numero)
 			tfm.exec.chatMessage("<CR>"..translate(name, "false_answer"),name)
 		end
 	end
-	intervalo = true
+	intermission = true
 end
 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-------------------------------------------------------------PRECISA MELHORAR O RESET---------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------RESET---------------------------------------------------------------------------------------------------------------
 function reset()
-	necessarioResetar = true
+	necessaryReset = true
 
-	ui.removeTextArea(id["question_reset"])
+	ui.removeTextArea(id["question_reset_label"])
 	ui.removeTextArea(id["ask_word_popup"])
-	ui.removeTextArea(id["label_question_button"])
-	ui.removeTextArea(id["resposta_true"])
-	ui.removeTextArea(id["resposta_false"])
-	rodada = 0
-	pontuacao = 0
+	ui.removeTextArea(id["question_button_label"])
+	ui.removeTextArea(id["true_answer_floor"])
+	ui.removeTextArea(id["false_answer_floor"])
+	round = 0
+	punctuation = 0
 
 	if hasToReset then
 		tfm.exec.newGame("@7917347")
 		hasToReset = false 
-		necessarioResetar = false 
+		necessaryReset = false 
 		timerReset = 0
 	end
 end
 
+----------------------------------------------------FUNCTION THAT DEFINES THE GAME COMMANDS---------------------------------------------------------------------------------------------------------------------
+
 function eventChatCommand(playerName, message)
-	if message == "skip" and playerName == mestre then
-		mestreSkip = true
+	if message == "skip" and playerName == shaman then
+		shamanSkip = true
 		reset()
 	end
-	if message == "q" and playerName == mestre and not perguntaFeita then
-		eventTextAreaCallback(0, mestre, "callbackAskWord")
+	if message == "q" and playerName == shaman and not questionAsked then
+		eventTextAreaCallback(0, shaman, "callbackAskWord")
 	end
 	if message == "help" then
 		if not helpMenuOpen then
@@ -681,5 +669,7 @@ end
 system.disableChatCommandDisplay(skip, true)
 system.disableChatCommandDisplay(q, true)
 system.disableChatCommandDisplay(help, true)
+
+-----------------------------------------------------------START--------------------------------------------------------------
 
 tfm.exec.newGame("@7917347")
