@@ -5,10 +5,10 @@ tfm.exec.disableAutoScore(true)
 tfm.exec.disableAutoTimeLeft(true)
 
 -------------------------------------------------------------DEFINIÇÃO DAS VARIAVEIS------------------------------------------------------------
-local shaman = nil -- quem vai ser o perguntador. como é randomico, começa nulo
+local shaman = nil 
 local oldshaman = nil
-local players = {} -- armazena a quantidade de jogadores da sala
-local lang = {} -- armazena as mensagens do jogo
+local players = {} 
+local lang = {} 
 local id = {}
 local winner = nil
 
@@ -223,8 +223,7 @@ function translate(player, key)
 		return lang.en[key]
 	end
 
-	--return lang[community][key]
-	return lang.bt[key]
+	return lang[community][key]
 end
 
 ---------------------------------------------GENERAL FUNCTIONS------------------------------------------------------------
@@ -237,7 +236,7 @@ function eventPlayerDied(name)
 end
 function eventNewPlayer(playerName)
   amountOfLivePlayers = amountOfLivePlayers + 1
-  if numberPlayers() == 3 then
+  if numberPlayers() == 2 then
   	onePlayer = false
   	tfm.exec.newGame("@7917347")
   end
@@ -312,7 +311,7 @@ function newQuestion()
 			if (name~=shaman) then
 				ui.removeTextArea(id["question_button_label"])
   		end
-  		ui.addTextArea(id["waiting_question"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name,"waiting_question1")..shaman..translate(name,"waiting_question2").. "</font></font></p>", name, 20, 320, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+  		ui.addTextArea(id["waiting_question"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name,"waiting_question1")..shaman..translate(name,"waiting_question2").. "</font></font></p>", name, 20, 335, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 		end
 
 		timer = 0
@@ -333,7 +332,7 @@ function newQuestion()
 		onePlayer = true
 		ui.addTextArea(id["time"],"<p align='center'><font size='45'>".."?".."",nil,360,213,80,60,0x000001,0x494949,1.0)
 		for name,player in next,tfm.get.room.playerList do	
-			ui.addTextArea(id["waiting_question"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "more_players").. "</font></font></p>", name, 20, 320, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)	
+			ui.addTextArea(id["waiting_question"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "more_players").. "</font></font></p>", name, 20, 335, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)	
 		end
 	end
 
@@ -427,7 +426,6 @@ end
 
 function eventPopupAnswer(popupId, playerName, answerPopUp)
   if popupId==id["ask_word_popup"] and shaman==playerName and not questionAsked then
-  	--criar cenário pós pergunta ser enviada
   	if answerPopUp ~= "" then
   		tfm.exec.chatMessage("<VP>"..translate(playerName, "your_question")..answerPopUp,playerName)
 	  	questionPlayer = answerPopUp
@@ -439,7 +437,7 @@ end
 
 ------------------------------------------------------------GAME LOOP (OCCURS EVERY HALF SECOND)-----------------------------------
 function eventLoop(present, timeLeft)
-	ui.setMapName("<N><J>"..lang.br.map_name.." <N>   "..lang.br.live_mices.." <V>"..numberOfPlayersLive.."</V> / <J>"..(amountOfLivePlayers-1).." <BL>|<N> "..lang.br.current_round.."<V>"..round.." | <VP><b>"..lang.br.actual_shaman.."</b><N><ROSE>"..shaman.."<BL><")
+	ui.setMapName("<N><J>".."True or False".."   <N>|   "..lang.br.live_mices.." <V>"..numberOfPlayersLive.."</V> / <J>"..(amountOfLivePlayers-1).." <BL>   |<N>   "..lang.br.current_round.."<V>"..round.."   |   <VP><b>"..lang.br.actual_shaman.."</b><N><ROSE>"..shaman.."<BL><")
 
 	if timeLeft < 500 and questionAsked and not intermission then
 		for name,player in next,tfm.get.room.playerList do
@@ -464,7 +462,7 @@ function eventLoop(present, timeLeft)
 			end
 		end
 		intermission = true
-		death(answer, 2)
+		death(answer, math.random(1, 7))
 	end
 
 	if timeLeft < 1 and intermission then
@@ -509,17 +507,17 @@ function eventLoop(present, timeLeft)
 		if isTimeOut then 
 			ui.removeTextArea(id["question_button_label"])
 			for name,player in next,tfm.get.room.playerList do	
-				ui.addTextArea(id["question_reset_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "no_time")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
+				ui.addTextArea(id["question_reset_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "no_time")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 335, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
 			end
 		end
 		if shamanOut then 
 			for name,player in next,tfm.get.room.playerList do
-				ui.addTextArea(id["question_reset_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "shaman_out")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
+				ui.addTextArea(id["question_reset_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..translate(name, "shaman_out")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 335, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f) 
 			end
 		end
 		if shamanSkip then
 			for name,player in next,tfm.get.room.playerList do
-				ui.addTextArea(id["question_reset_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..shaman..translate(name, "shaman_skip")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 340, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
+				ui.addTextArea(id["question_reset_label"], "<font size='20'><p align='center'><BL><font color='#DCDCDC'>" ..shaman..translate(name, "shaman_skip")..translate(name, "next_round")..math.floor(6 - timerReset)..translate(name, "seconds").."</font></font></p>", name, 20, 335, 750, 30, 0xC0C0C0, 0xC0C0C0, 0f)
 			end
 		end	
 	end
@@ -539,30 +537,30 @@ function eventLoop(present, timeLeft)
  end
 
  ---------------------------------------------CREATING THE DIFFERENT TYPES OF DEATH ----------------------------------------------------
-function death(condicao, numero)
+function death(condition, number)
 
-	if condicao == true then
-		if numero == 1 then
+	if condition == true then
+		if number == 1 then
 			tfm.exec.removePhysicObject(id["false_floor_answer"])
 		end
-		if numero == 2 then
+		if number == 2 then
 			tfm.exec.removePhysicObject(id["false_floor_answer"])
 			tfm.exec.removePhysicObject(id["true_floor_answer"])
 			tfm.exec.addPhysicObject(id["false_floor_answer"], 180, 275, floorTransparent)
 		end
-		if numero == 3 then
+		if number == 3 then
 			tfm.exec.addPhysicObject(id["false_floor_answer"], 618, 273, floorFake)		
 		end	
-		if numero == 4 then
+		if number == 4 then
 			tfm.exec.addPhysicObject(id["false_floor_answer"], 618, 273, pisoAcido)		
 		end	
-		if numero == 5 then
+		if number == 5 then
 			tfm.exec.removePhysicObject(id["wall2"])
 			tfm.exec.addShamanObject(17, 480, 210, 90, 50, 0, false)
 			tfm.exec.addShamanObject(17, 480, 230, 90, 50, 0, false)
 			tfm.exec.addShamanObject(17, 480, 250, 90, 50, 0, false)
 		end
-		if numero == 6 then
+		if number == 6 then
 			for name,player in next,tfm.get.room.playerList do
 				if tfm.get.room.playerList[name].x >= 470 and tfm.get.room.playerList[name].x <= 800 then
 					tfm.exec.giveCheese(name)
@@ -570,7 +568,7 @@ function death(condicao, numero)
 			end
 			tfm.exec.addPhysicObject(id["false_floor_answer"], 618, 275, pisoAgua)
 		end
-		if numero == 7 then
+		if number == 7 then
 			for name,player in next,tfm.get.room.playerList do
 				if tfm.get.room.playerList[name].x >= 470 and tfm.get.room.playerList[name].x <= 800 then
 					tfm.exec.setPlayerGravityScale(name, -1)
@@ -583,28 +581,28 @@ function death(condicao, numero)
 		end
 	end
 
-	if condicao == false then
-		if numero == 1 then
+	if condition == false then
+		if number == 1 then
 			tfm.exec.removePhysicObject(id["true_floor_answer"])
 		end	
-		if numero == 2 then
+		if number == 2 then
 			tfm.exec.removePhysicObject(id["false_floor_answer"])
 			tfm.exec.removePhysicObject(id["true_floor_answer"])
 			tfm.exec.addPhysicObject(id["true_floor_answer"], 618, 275, floorTransparent)
 		end
-		if numero == 3 then
+		if number == 3 then
 			tfm.exec.addPhysicObject(id["true_floor_answer"], 180, 275, floorFake)		
 		end	
-		if numero == 4 then
+		if number == 4 then
 			tfm.exec.addPhysicObject(id["true_floor_answer"], 180, 275, pisoAcido)		
 		end	
-		if numero == 5 then
+		if number == 5 then
 			tfm.exec.removePhysicObject(id["wall1"])
 			tfm.exec.addShamanObject(17, 315, 210, 270, 50, 0, false)
 			tfm.exec.addShamanObject(17, 315, 230, 270, 50, 0, false)
 			tfm.exec.addShamanObject(17, 315, 250, 270, 50, 0, false)
 		end
-		if numero == 6 then
+		if number == 6 then
 			for name,player in next,tfm.get.room.playerList do
 				if tfm.get.room.playerList[name].x >= 0 and tfm.get.room.playerList[name].x <= 330 then
 					tfm.exec.giveCheese(name)
@@ -612,7 +610,7 @@ function death(condicao, numero)
 			end
 			tfm.exec.addPhysicObject(id["true_floor_answer"], 180, 275, pisoAgua)
 		end
-		if numero == 7 then
+		if number == 7 then
 			for name,player in next,tfm.get.room.playerList do
 				if tfm.get.room.playerList[name].x >= 0 and tfm.get.room.playerList[name].x <= 330 then
 					tfm.exec.setPlayerGravityScale(name, -1)
